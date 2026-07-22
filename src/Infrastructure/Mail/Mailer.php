@@ -18,6 +18,7 @@ use Symfony\Component\Mailer\Mailer as SymfonyMailer;
 use Symfony\Component\Mailer\Transport\Smtp\EsmtpTransport;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
+use Vokuro\Contracts\Mailer as MailerInterface;
 
 /**
  * Sends the application's e-mails.
@@ -25,7 +26,7 @@ use Symfony\Component\Mime\Email;
  * The renderer it is given is bound to the e-mail layout, so a caller names a
  * template and hands over its parameters without knowing any markup.
  */
-final class Mailer
+final class Mailer implements MailerInterface
 {
     public function __construct(
         private Renderer $renderer,

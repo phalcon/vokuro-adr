@@ -17,9 +17,9 @@ use Phalcon\ADR\Input\Input;
 use Phalcon\ADR\Payload\Payload;
 use Phalcon\Contracts\ADR\Payload\Payload as PayloadInterface;
 use Phalcon\Encryption\Security;
+use Vokuro\Contracts\Mailer;
 use Vokuro\Contracts\Repository\EmailConfirmationRepository;
 use Vokuro\Contracts\Repository\UserRepository;
-use Vokuro\Infrastructure\Mail\Mailer;
 
 /**
  * Registers an account.
@@ -123,7 +123,7 @@ final class SignUp
             $messages['email'] = 'The e-mail is required';
         } elseif (false === filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $messages['email'] = 'The e-mail is not valid';
-        } elseif ([] !== $this->users->findByEmail($email)) {
+        } elseif (null !== $this->users->findByEmail($email)) {
             $messages['email'] = 'That e-mail is already registered';
         }
 

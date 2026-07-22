@@ -17,9 +17,9 @@ use Phalcon\ADR\Input\Input;
 use Phalcon\ADR\Payload\Payload;
 use Phalcon\Contracts\ADR\Payload\Payload as PayloadInterface;
 use Phalcon\Encryption\Security;
+use Vokuro\Contracts\Mailer;
 use Vokuro\Contracts\Repository\EmailConfirmationRepository;
 use Vokuro\Contracts\Repository\UserRepository;
-use Vokuro\Infrastructure\Mail\Mailer;
 
 /**
  * Creates a user on behalf of an administrator.

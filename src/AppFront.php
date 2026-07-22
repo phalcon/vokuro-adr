@@ -41,6 +41,7 @@ use Vokuro\Application\Authorizer;
 use Vokuro\Application\RememberMe;
 use Vokuro\Contracts\Authorization;
 use Vokuro\Contracts\Cookies as CookiesInterface;
+use Vokuro\Contracts\Mailer as MailerInterface;
 use Vokuro\Contracts\Repository\EmailConfirmationRepository as EmailConfirmationRepositoryInterface;
 use Vokuro\Contracts\Repository\FailedLoginRepository as FailedLoginRepositoryInterface;
 use Vokuro\Contracts\Repository\PasswordChangeRepository as PasswordChangeRepositoryInterface;
@@ -239,7 +240,7 @@ final class AppFront extends AbstractHttpFront
          * names a template.
          */
         $container->set(
-            Mailer::class,
+            MailerInterface::class,
             function ($container) {
                 return new Mailer(
                     $this->newRenderer($container, 'layouts/emailTemplates'),

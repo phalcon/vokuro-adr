@@ -16,10 +16,10 @@ namespace Vokuro\Domain\Session;
 use Phalcon\ADR\Input\Input;
 use Phalcon\ADR\Payload\Payload;
 use Phalcon\Contracts\ADR\Payload\Payload as PayloadInterface;
+use Vokuro\Contracts\Mailer;
 use Vokuro\Contracts\Repository\ResetPasswordRepository;
 use Vokuro\Contracts\Repository\UserRepository;
 use Vokuro\Domain\Model\User;
-use Vokuro\Infrastructure\Mail\Mailer;
 
 /**
  * Issues a single use code that lets a user set a new password, and mails it.
