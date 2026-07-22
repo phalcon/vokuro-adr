@@ -30,16 +30,23 @@ final class FailedLoginRepository implements FailedLoginRepositoryInterface
 
     public function add(?int $userId, string $ipAddress): void
     {
+        $columns = [
+            'ipAddress' => $ipAddress,
+            'attempted' => time(),
+        ];
+
+        /**
+         * A `null` value would be emitted as an unbound placeholder, so for an
+         * unknown user the column is omitted and defaults to NULL.
+         */
+        if (null !== $userId) {
+            $columns['usersId'] = $userId;
+        }
+
         $insert = $this->queryFactory->newInsert($this->connection);
         $insert
             ->into('failed_logins')
-            ->columns(
-                [
-                    'usersId'   => $userId,
-                    'ipAddress' => $ipAddress,
-                    'attempted' => time(),
-                ]
-            );
+            ->columns($columns);
 
         $insert->perform();
     }
