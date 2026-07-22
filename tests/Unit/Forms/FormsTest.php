@@ -31,10 +31,13 @@ final class FormsTest extends AbstractUnitTestCase
      *
      * @dataProvider formProvider
      *
-     * @param array<int, string> $expected
+     * @param class-string<Form> $formClass
+     * @param array<int, string>  $expected
      */
-    public function testFormDeclaresItsFields(Form $form, array $expected): void
+    public function testFormDeclaresItsFields(string $formClass, array $expected): void
     {
+        $form = new $formClass();
+
         $names = array_keys($form->getElements());
 
         sort($names);
@@ -44,19 +47,19 @@ final class FormsTest extends AbstractUnitTestCase
     }
 
     /**
-     * @return array<string, array{0: Form, 1: array<int, string>}>
+     * @return array<string, array{0: class-string<Form>, 1: array<int, string>}>
      */
     public static function formProvider(): array
     {
         return [
-            'sign up'         => [new SignUpForm(), ['name', 'email', 'password', 'confirmPassword', 'terms', 'Sign Up']],
-            'login'           => [new LoginForm(), ['email', 'password', 'remember', 'Login']],
-            'change password' => [new ChangePasswordForm(), ['password', 'confirmPassword']],
-            'forgot password' => [new ForgotPasswordForm(), ['email', 'Send']],
-            'profile'         => [new ProfileForm(), ['name']],
-            'profile search'  => [new ProfileSearchForm(), ['id', 'name']],
-            'user'            => [new UserForm(), ['name', 'email']],
-            'user search'     => [new UserSearchForm(), ['id', 'name', 'email']],
+            'sign up'         => [SignUpForm::class, ['name', 'email', 'password', 'confirmPassword', 'terms', 'Sign Up']],
+            'login'           => [LoginForm::class, ['email', 'password', 'remember', 'Login']],
+            'change password' => [ChangePasswordForm::class, ['password', 'confirmPassword']],
+            'forgot password' => [ForgotPasswordForm::class, ['email', 'Send']],
+            'profile'         => [ProfileForm::class, ['name']],
+            'profile search'  => [ProfileSearchForm::class, ['id', 'name']],
+            'user'            => [UserForm::class, ['name', 'email']],
+            'user search'     => [UserSearchForm::class, ['id', 'name', 'email']],
         ];
     }
 }
