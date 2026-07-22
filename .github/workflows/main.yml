@@ -134,8 +134,11 @@ jobs:
           composer migrate
           composer seed
 
-      - name: "Tests"
-        run: composer test
+      - name: "Unit tests"
+        run: composer test-unit
+
+      - name: "Integration tests"
+        run: composer test-integration
 
   coverage:
     name: "Coverage"
@@ -197,7 +200,7 @@ jobs:
           composer seed
 
       - name: "Tests with coverage"
-        run: composer test-coverage
+        run: composer test-all-coverage
 
       # SonarQube first (push only) so a failing octocov gate can't skip the upload.
       - name: "SonarQube Scan"
