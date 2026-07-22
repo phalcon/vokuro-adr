@@ -32,6 +32,9 @@ final class ProfileSelectData implements SelectData
     ) {
     }
 
+    /**
+     * @return array<array-key, mixed>
+     */
     public function getAttributes(): array
     {
         return [];

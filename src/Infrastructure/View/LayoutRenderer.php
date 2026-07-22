@@ -37,6 +37,9 @@ final class LayoutRenderer implements Renderer
     ) {
     }
 
+    /**
+     * @param array<string, mixed> $params
+     */
     public function render(string $path, array $params = []): string
     {
         /**

@@ -87,6 +87,11 @@ final class ProfileRepository implements ProfileRepositoryInterface
         );
     }
 
+    /**
+     * @param array<string, mixed> $filters
+     *
+     * @return Page<Profile>
+     */
     public function page(int $page, int $perPage, array $filters = []): Page
     {
         $where = $this->filters($filters);
@@ -131,6 +136,9 @@ final class ProfileRepository implements ProfileRepositoryInterface
         $update->perform();
     }
 
+    /**
+     * @param array<string, mixed> $where
+     */
     private function applyFilters(Select $select, array $where): void
     {
         foreach ($where as $condition => $value) {

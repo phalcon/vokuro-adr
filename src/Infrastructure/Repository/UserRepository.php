@@ -59,18 +59,6 @@ final class UserRepository implements UserRepositoryInterface
         return (int) $insert->getLastInsertId();
     }
 
-    public function findByEmail(string $email): ?User
-    {
-        $select = $this->baseSelect()->where('u.email = ', $email)->limit(1);
-
-        $row = $this->connection->fetchOne(
-            $select->getStatement(),
-            $select->getBindValues()
-        );
-
-        return [] === $row ? null : $this->hydrate($row);
-    }
-
     public function byProfile(int $profileId): UserCollection
     {
         $select = $this->baseSelect()
@@ -97,6 +85,18 @@ final class UserRepository implements UserRepositoryInterface
         $delete->perform();
     }
 
+    public function findByEmail(string $email): ?User
+    {
+        $select = $this->baseSelect()->where('u.email = ', $email)->limit(1);
+
+        $row = $this->connection->fetchOne(
+            $select->getStatement(),
+            $select->getBindValues()
+        );
+
+        return [] === $row ? null : $this->hydrate($row);
+    }
+
     public function findById(int $id): ?User
     {
         $select = $this->baseSelect()->where('u.id = ', $id)->limit(1);
@@ -109,17 +109,11 @@ final class UserRepository implements UserRepositoryInterface
         return [] === $row ? null : $this->hydrate($row);
     }
 
-    public function update(int $id, array $fields): void
-    {
-        $update = $this->queryFactory->newUpdate($this->connection);
-        $update
-            ->from('users')
-            ->columns($fields)
-            ->where('id = ', $id);
-
-        $update->perform();
-    }
-
+    /**
+     * @param array<string, mixed> $filters
+     *
+     * @return Page<User>
+     */
     public function page(int $page, int $perPage, array $filters = []): Page
     {
         $where = $this->filters($filters);
@@ -152,6 +146,20 @@ final class UserRepository implements UserRepositoryInterface
         return new Page(new UserCollection($users), $current, $last, $total);
     }
 
+    public function update(int $id, array $fields): void
+    {
+        $update = $this->queryFactory->newUpdate($this->connection);
+        $update
+            ->from('users')
+            ->columns($fields)
+            ->where('id = ', $id);
+
+        $update->perform();
+    }
+
+    /**
+     * @param array<string, mixed> $where
+     */
     private function applyFilters(Select $select, array $where): void
     {
         foreach ($where as $condition => $value) {

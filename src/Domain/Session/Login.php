@@ -70,7 +70,7 @@ final class Login
          * that a missing account cannot be told apart by how long the answer
          * takes.
          */
-        $hash    = $user?->passwordHash ?? '$2y$08$' . str_repeat('.', 53);
+        $hash    = null !== $user ? $user->passwordHash : '$2y$08$' . str_repeat('.', 53);
         $correct = $this->security->checkHash($password, $hash);
 
         if (null === $user || false === $correct) {

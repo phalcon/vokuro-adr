@@ -65,7 +65,7 @@ final class PostPermissions implements Action
     }
 
     /**
-     * @param list<string> $messages
+     * @param array<array-key, mixed> $messages
      */
     private function render(
         AttributeRequest $request,

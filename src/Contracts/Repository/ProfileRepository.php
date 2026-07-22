@@ -47,6 +47,8 @@ interface ProfileRepository
      * A page of profiles, most recent first, narrowed by any of the filters.
      *
      * @param array<string, mixed> $filters id / name
+     *
+     * @return Page<Profile>
      */
     public function page(int $page, int $perPage, array $filters = []): Page;
 

@@ -19,7 +19,7 @@ use Vokuro\Domain\Model\SuccessLogin;
 /**
  * A typed collection of SuccessLogin records, keyed by id.
  *
- * @extends Collection<string, SuccessLogin>
+ * @extends Collection<SuccessLogin>
  */
 final class SuccessLoginCollection extends Collection
 {

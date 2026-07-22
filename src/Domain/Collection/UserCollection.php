@@ -23,7 +23,7 @@ use Vokuro\Domain\Model\User;
  * The `User::class` guard makes it reject anything that is not a user at the
  * moment it is added.
  *
- * @extends Collection<string, User>
+ * @extends Collection<User>
  */
 final class UserCollection extends Collection
 {

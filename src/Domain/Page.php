@@ -24,9 +24,10 @@ use Phalcon\Support\Collection;
 final class Page
 {
     /**
-     * @param Collection<string, TItem> $items
+     * @param Collection<TItem> $items
      */
     public function __construct(
+        /** @var Collection<TItem> */
         public readonly Collection $items,
         public readonly int $current,
         public readonly int $last,

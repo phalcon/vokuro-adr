@@ -19,7 +19,7 @@ use Vokuro\Domain\Model\PasswordChange;
 /**
  * A typed collection of PasswordChange records, keyed by id.
  *
- * @extends Collection<string, PasswordChange>
+ * @extends Collection<PasswordChange>
  */
 final class PasswordChangeCollection extends Collection
 {

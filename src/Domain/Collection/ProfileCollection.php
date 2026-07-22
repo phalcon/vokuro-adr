@@ -19,7 +19,7 @@ use Vokuro\Domain\Model\Profile;
 /**
  * A typed collection of profiles, keyed by id.
  *
- * @extends Collection<string, Profile>
+ * @extends Collection<Profile>
  */
 final class ProfileCollection extends Collection
 {

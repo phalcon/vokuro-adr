@@ -19,7 +19,7 @@ use Vokuro\Domain\Model\ResetPassword;
 /**
  * A typed collection of ResetPassword records, keyed by id.
  *
- * @extends Collection<string, ResetPassword>
+ * @extends Collection<ResetPassword>
  */
 final class ResetPasswordCollection extends Collection
 {

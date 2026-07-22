@@ -14,12 +14,15 @@ declare(strict_types=1);
 namespace Vokuro;
 
 use Dotenv\Dotenv;
-use Phalcon\ADR\Front\AbstractHttpFront;
+use Phalcon\ADR\Dispatcher;
 use Phalcon\ADR\ErrorResponder;
+use Phalcon\ADR\Front\AbstractHttpFront;
 use Phalcon\ADR\Responder\JsonResponder;
 use Phalcon\ADR\Responder\StatusMapper;
 use Phalcon\ADR\Responder\ViewResponder;
 use Phalcon\Container\Container;
+use Phalcon\Contracts\ADR\Dispatcher as DispatcherContract;
+use Phalcon\Contracts\Events\Manager as EventsManagerContract;
 use Phalcon\Contracts\Http\AttributeRequest;
 use Phalcon\Contracts\Logger\Logger as LoggerInterface;
 use Phalcon\Contracts\View\Renderer;
@@ -34,19 +37,16 @@ use Phalcon\Mvc\View\Simple;
 use Phalcon\Session\Adapter\Stream;
 use Phalcon\Session\Manager as SessionManager;
 use Phalcon\Session\ManagerInterface;
-use Phalcon\ADR\Dispatcher;
-use Phalcon\Contracts\ADR\Dispatcher as DispatcherContract;
-use Phalcon\Contracts\Events\Manager as EventsManagerContract;
 use Vokuro\Application\Authorizer;
 use Vokuro\Application\RememberMe;
-use Vokuro\Contracts\Cookies as CookiesInterface;
 use Vokuro\Contracts\Authorization;
+use Vokuro\Contracts\Cookies as CookiesInterface;
 use Vokuro\Contracts\Repository\EmailConfirmationRepository as EmailConfirmationRepositoryInterface;
 use Vokuro\Contracts\Repository\FailedLoginRepository as FailedLoginRepositoryInterface;
 use Vokuro\Contracts\Repository\PasswordChangeRepository as PasswordChangeRepositoryInterface;
 use Vokuro\Contracts\Repository\PermissionRepository as PermissionRepositoryInterface;
-use Vokuro\Contracts\Repository\RememberTokenRepository as RememberTokenRepositoryInterface;
 use Vokuro\Contracts\Repository\ProfileRepository as ProfileRepositoryInterface;
+use Vokuro\Contracts\Repository\RememberTokenRepository as RememberTokenRepositoryInterface;
 use Vokuro\Contracts\Repository\ResetPasswordRepository as ResetPasswordRepositoryInterface;
 use Vokuro\Contracts\Repository\SuccessLoginRepository as SuccessLoginRepositoryInterface;
 use Vokuro\Contracts\Repository\UserRepository as UserRepositoryInterface;
@@ -56,8 +56,8 @@ use Vokuro\Infrastructure\Repository\EmailConfirmationRepository;
 use Vokuro\Infrastructure\Repository\FailedLoginRepository;
 use Vokuro\Infrastructure\Repository\PasswordChangeRepository;
 use Vokuro\Infrastructure\Repository\PermissionRepository;
-use Vokuro\Infrastructure\Repository\RememberTokenRepository;
 use Vokuro\Infrastructure\Repository\ProfileRepository;
+use Vokuro\Infrastructure\Repository\RememberTokenRepository;
 use Vokuro\Infrastructure\Repository\ResetPasswordRepository;
 use Vokuro\Infrastructure\Repository\SuccessLoginRepository;
 use Vokuro\Infrastructure\Repository\UserRepository;
@@ -87,11 +87,11 @@ final class AppFront extends AbstractHttpFront
         $container->get('router')
                   ->setBaseNamespace('Vokuro\\Action')
                   ->setMiddlewareMap(
-                    [
+                      [
                         '\\Users\\'       => [RequireLogin::class, RequirePermission::class],
                         '\\Profiles\\'    => [RequireLogin::class, RequirePermission::class],
                         '\\Permissions\\' => [RequireLogin::class, RequirePermission::class],
-                    ]
+                      ]
                   );
 
         /**
@@ -343,5 +343,4 @@ final class AppFront extends AbstractHttpFront
             $layout
         );
     }
-
 }

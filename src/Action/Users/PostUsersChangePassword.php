@@ -19,6 +19,7 @@ use Phalcon\ADR\Payload\Status;
 use Phalcon\ADR\Responder\Redirect;
 use Phalcon\ADR\Responder\RedirectResponder;
 use Phalcon\Contracts\ADR\Action;
+use Phalcon\Contracts\ADR\Payload\Payload as PayloadInterface;
 use Phalcon\Contracts\Http\AttributeRequest;
 use Phalcon\Encryption\Security;
 use Phalcon\Http\Response;
@@ -72,7 +73,7 @@ final class PostUsersChangePassword implements Action
 
     private function form(
         AttributeRequest $request,
-        Payload $payload
+        PayloadInterface $payload
     ): ResponseInterface {
         return ($this->view->withTemplate('users/changePassword'))(
             $request,

@@ -30,14 +30,19 @@ interface UserRepository
     public function add(array $user): int;
 
     /**
-     * The user for an address, or null when there is no account for it.
-     */
-    public function findByEmail(string $email): ?User;
-
-    /**
      * The users assigned to a profile.
      */
     public function byProfile(int $profileId): UserCollection;
+
+    /**
+     * Removes a user.
+     */
+    public function delete(int $id): void;
+
+    /**
+     * The user for an address, or null when there is no account for it.
+     */
+    public function findByEmail(string $email): ?User;
 
     /**
      * The user with an id, or null when there is none.
@@ -48,6 +53,8 @@ interface UserRepository
      * A page of users, most recent first, narrowed by any of the filters.
      *
      * @param array<string, mixed> $filters id / name / email / profilesId
+     *
+     * @return Page<User>
      */
     public function page(int $page, int $perPage, array $filters = []): Page;
 
@@ -57,9 +64,4 @@ interface UserRepository
      * @param array<string, mixed> $fields
      */
     public function update(int $id, array $fields): void;
-
-    /**
-     * Removes a user.
-     */
-    public function delete(int $id): void;
 }
