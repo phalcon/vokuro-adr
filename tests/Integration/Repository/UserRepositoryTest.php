@@ -131,14 +131,14 @@ final class UserRepositoryTest extends AbstractIntegrationTestCase
     public function testPageFilters(): void
     {
         $profileId = $this->insert('profiles', ['name' => 'Users', 'active' => 'Y']);
-        $this->seedUser($profileId, 'sarah@x.dev');
+        $firstId   = $this->seedUser($profileId, 'sarah@x.dev');
         $this->seedUser($profileId, 'kyle@x.dev');
         $this->seedUser($profileId, 'john@x.dev');
 
-        $page = $this->repository->page(1, 10, ['email' => 'sarah']);
-
-        $this->assertSame(1, $page->total);
-        $this->assertCount(1, $page->items);
+        $this->assertSame(1, $this->repository->page(1, 10, ['email' => 'sarah'])->total);
+        $this->assertSame(1, $this->repository->page(1, 10, ['id' => $firstId])->total);
+        $this->assertSame(3, $this->repository->page(1, 10, ['name' => 'Sarah'])->total);
+        $this->assertSame(3, $this->repository->page(1, 10, ['profilesId' => $profileId])->total);
     }
 
     private function seedUser(int $profilesId, string $email = 's@x.dev'): int

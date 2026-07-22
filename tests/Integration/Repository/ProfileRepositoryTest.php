@@ -115,5 +115,6 @@ final class ProfileRepositoryTest extends AbstractIntegrationTestCase
 
         $this->assertSame(1, $page->total);
         $this->assertCount(1, $page->items);
+        $this->assertSame(1, $this->repository->page(1, 10, ['id' => 1])->total);
     }
 }
