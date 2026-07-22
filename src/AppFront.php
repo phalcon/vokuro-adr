@@ -228,12 +228,7 @@ final class AppFront extends AbstractHttpFront
          * registering one requires a `Phalcon\Di\DiInterface`, which the ADR
          * container is not, so templates are `.phtml`.
          */
-        $container->set(
-            Renderer::class,
-            function ($container) {
-                return $this->newRenderer($container, 'layouts/public');
-            }
-        );
+        $this->registerRenderers($container);
 
         /**
          * The mailer renders through the e-mail layout, so a caller only ever
@@ -252,6 +247,59 @@ final class AppFront extends AbstractHttpFront
                     $this->env('MAIL_SMTP_USERNAME', ''),
                     $this->env('MAIL_SMTP_PASSWORD', '')
                 );
+            }
+        );
+    }
+
+    /**
+     * Wrapper to getenv() and $_ENV
+     *
+     * @param string $key
+     * @param mixed  $defaultValue
+     * @return mixed
+     */
+    private function env(string $key, mixed $defaultValue = null): mixed
+    {
+        $value = getenv($key);
+        if (false !== $value) {
+            return $value;
+        }
+
+        return $_ENV[$key] ?? $defaultValue;
+    }
+
+    /**
+     * Builds a view bound to the given layout, with the helpers every template
+     * expects to find.
+     */
+    private function newRenderer(Container $container, string $layout): LayoutRenderer
+    {
+        $view = new Simple();
+        $view->setViewsDir($this->projectRoot . '/resources/views/');
+        $view->setVar('tag', $container->get(TagFactory::class));
+        $view->setVar('url', $container->get(UrlInterface::class));
+        $view->setVar('security', $container->get(Security::class));
+
+        return new LayoutRenderer(
+            $view,
+            $container->get(AttributeRequest::class),
+            $container->get(ManagerInterface::class),
+            $layout
+        );
+    }
+
+    private function registerRenderers(Container $container): void
+    {
+        /**
+         * The ADR provider does not bind a renderer, so the application binds
+         * its own. The view is deliberately left without registered engines:
+         * registering one requires a `Phalcon\Di\DiInterface`, which the ADR
+         * container is not, so templates are `.phtml`.
+         */
+        $container->set(
+            Renderer::class,
+            function ($container) {
+                return $this->newRenderer($container, 'layouts/public');
             }
         );
 
@@ -305,43 +353,6 @@ final class AppFront extends AbstractHttpFront
                     )
                 );
             }
-        );
-    }
-
-    /**
-     * Wrapper to getenv() and $_ENV
-     *
-     * @param string $key
-     * @param mixed  $defaultValue
-     * @return mixed
-     */
-    private function env(string $key, mixed $defaultValue = null): mixed
-    {
-        $value = getenv($key);
-        if (false !== $value) {
-            return $value;
-        }
-
-        return $_ENV[$key] ?? $defaultValue;
-    }
-
-    /**
-     * Builds a view bound to the given layout, with the helpers every template
-     * expects to find.
-     */
-    private function newRenderer(Container $container, string $layout): LayoutRenderer
-    {
-        $view = new Simple();
-        $view->setViewsDir($this->projectRoot . '/resources/views/');
-        $view->setVar('tag', $container->get(TagFactory::class));
-        $view->setVar('url', $container->get(UrlInterface::class));
-        $view->setVar('security', $container->get(Security::class));
-
-        return new LayoutRenderer(
-            $view,
-            $container->get(AttributeRequest::class),
-            $container->get(ManagerInterface::class),
-            $layout
         );
     }
 }
