@@ -37,17 +37,18 @@ final class GetUsersSearch implements Action
 
     public function __invoke(AttributeRequest $request): ResponseInterface
     {
-        $query = $request->getQuery();
+        $query   = $request->getQuery();
+        $filters = [
+            'id'         => $query['id'] ?? '',
+            'name'       => $query['name'] ?? '',
+            'email'      => $query['email'] ?? '',
+            'profilesId' => $query['profilesId'] ?? '',
+        ];
 
         $page = $this->users->page(
             (int) ($query['page'] ?? 1),
             self::PER_PAGE,
-            [
-                'id'         => $query['id'] ?? '',
-                'name'       => $query['name'] ?? '',
-                'email'      => $query['email'] ?? '',
-                'profilesId' => $query['profilesId'] ?? '',
-            ]
+            $filters
         );
 
         return ($this->responder->withTemplate('users/search'))(
@@ -55,12 +56,7 @@ final class GetUsersSearch implements Action
             new Response(),
             Payload::success([
                 'page'  => $page,
-                'query' => http_build_query(array_filter([
-                    'id'         => $query['id'] ?? '',
-                    'name'       => $query['name'] ?? '',
-                    'email'      => $query['email'] ?? '',
-                    'profilesId' => $query['profilesId'] ?? '',
-                ])),
+                'query' => http_build_query(array_filter($filters)),
             ])
         );
     }

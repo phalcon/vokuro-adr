@@ -36,14 +36,16 @@ final class GetProfilesSearch implements Action
 
     public function __invoke(AttributeRequest $request): ResponseInterface
     {
-        $query = $request->getQuery();
-        $page  = $this->profiles->page(
+        $query   = $request->getQuery();
+        $filters = [
+            'id'   => $query['id'] ?? '',
+            'name' => $query['name'] ?? '',
+        ];
+
+        $page = $this->profiles->page(
             (int) ($query['page'] ?? 1),
             self::PER_PAGE,
-            [
-                'id'   => $query['id'] ?? '',
-                'name' => $query['name'] ?? '',
-            ]
+            $filters
         );
 
         return ($this->responder->withTemplate('profiles/search'))(
@@ -51,10 +53,7 @@ final class GetProfilesSearch implements Action
             new Response(),
             Payload::success([
                 'page'  => $page,
-                'query' => http_build_query(array_filter([
-                    'id'   => $query['id'] ?? '',
-                    'name' => $query['name'] ?? '',
-                ])),
+                'query' => http_build_query(array_filter($filters)),
             ])
         );
     }
