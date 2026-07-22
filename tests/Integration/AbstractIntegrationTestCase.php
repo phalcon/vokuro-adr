@@ -38,11 +38,11 @@ abstract class AbstractIntegrationTestCase extends AbstractUnitTestCase
         $this->connection = new Connection(
             sprintf(
                 'mysql:host=%s;port=%d;dbname=vokuro_adr_test;charset=utf8mb4',
-                getenv('DB_HOST') ?: 'mysql',
-                (int) (getenv('DB_PORT') ?: 3306)
+                $this->env('DB_HOST', 'mysql'),
+                (int) $this->env('DB_PORT', '3306')
             ),
-            getenv('DB_USERNAME') ?: 'root',
-            getenv('DB_PASSWORD') ?: 'secret'
+            $this->env('DB_USERNAME', 'root'),
+            $this->env('DB_PASSWORD', 'secret')
         );
 
         $this->queryFactory = new QueryFactory();
@@ -76,5 +76,21 @@ abstract class AbstractIntegrationTestCase extends AbstractUnitTestCase
         $insert->perform();
 
         return (int) $insert->getLastInsertId();
+    }
+
+    /**
+     * Real environment variables (the container's `env_file`) win; the
+     * `.env.test` values loaded into `$_ENV` cover CI, where nothing is
+     * exported to the shell and `getenv()` would come back empty.
+     */
+    private function env(string $key, string $default): string
+    {
+        $value = getenv($key);
+
+        if (false !== $value) {
+            return $value;
+        }
+
+        return (string) ($_ENV[$key] ?? $default);
     }
 }
