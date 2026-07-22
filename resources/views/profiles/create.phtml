@@ -2,7 +2,7 @@
 
 /**
  * @var array                         $messages field => message
- * @var \Phalcon\Encryption\Security  $security
+ * @var \Vokuro\Contracts\Csrf        $csrf
  * @var \Phalcon\Html\TagFactory      $tag
  * @var \Phalcon\Mvc\Url\UrlInterface $url
  */
@@ -43,7 +43,7 @@ $activeSelect = $tag->inputSelect('', '', ['name' => 'active', 'class' => 'selec
             <?= $activeSelect ?>
         </div>
 
-        <?= $tag->inputHidden('csrf', $security->getToken()) ?>
+        <?= $tag->inputHidden('csrf', $csrf->token()) ?>
         <?= $error('csrf') ?>
 
         <?= $tag->inputSubmit('save', 'Save', ['class' => 'btn']) ?>

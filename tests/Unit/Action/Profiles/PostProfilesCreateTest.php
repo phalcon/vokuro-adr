@@ -13,9 +13,10 @@ declare(strict_types=1);
 
 namespace Vokuro\Tests\Unit\Action\Profiles;
 
-use Phalcon\Encryption\Security;
 use Vokuro\Action\Profiles\PostProfilesCreate;
+use Vokuro\Contracts\Csrf;
 use Vokuro\Domain\Profiles\CreateProfile;
+use Vokuro\Tests\Support\Fake\FakeCsrf;
 use Vokuro\Tests\Support\Fake\FakeProfileRepository;
 use Vokuro\Tests\Unit\Action\AbstractActionTestCase;
 
@@ -35,10 +36,7 @@ final class PostProfilesCreateTest extends AbstractActionTestCase
      */
     public function testBadCsrfRerendersForm(): void
     {
-        $request  = $this->request(['csrf' => 'wrong']);
-        $security = $this->security($request);
-
-        $this->action($security)($request);
+        $this->action(new FakeCsrf(valid: false))($this->request());
 
         $this->assertSame('profiles/create', $this->renderer->calls[0]['path']);
         $this->assertSame([], $this->profiles->added);
@@ -49,9 +47,7 @@ final class PostProfilesCreateTest extends AbstractActionTestCase
      */
     public function testInvalidRerendersForm(): void
     {
-        [$request, $security] = $this->signedRequest(['name' => '', 'active' => 'Y']);
-
-        $this->action($security)($request);
+        $this->action(new FakeCsrf())($this->request(['name' => '', 'active' => 'Y']));
 
         $this->assertSame('profiles/create', $this->renderer->calls[0]['path']);
         $this->assertSame([], $this->profiles->added);
@@ -62,22 +58,20 @@ final class PostProfilesCreateTest extends AbstractActionTestCase
      */
     public function testCreatesAndRedirects(): void
     {
-        [$request, $security] = $this->signedRequest(['name' => 'Auditors', 'active' => 'Y']);
-
-        $response = $this->action($security)($request);
+        $response = $this->action(new FakeCsrf())($this->request(['name' => 'Auditors', 'active' => 'Y']));
 
         $this->assertSame(302, $response->getStatusCode());
         $this->assertSame('/profiles', $response->getHeaders()->get('Location'));
         $this->assertCount(1, $this->profiles->added);
     }
 
-    private function action(Security $security): PostProfilesCreate
+    private function action(Csrf $csrf): PostProfilesCreate
     {
         return new PostProfilesCreate(
             new CreateProfile($this->profiles),
             $this->privateResponder(),
             $this->redirectResponder(),
-            $security
+            $csrf
         );
     }
 }

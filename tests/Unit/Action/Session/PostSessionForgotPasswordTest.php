@@ -13,10 +13,11 @@ declare(strict_types=1);
 
 namespace Vokuro\Tests\Unit\Action\Session;
 
-use Phalcon\Encryption\Security;
 use Vokuro\Action\Session\PostSessionForgotPassword;
+use Vokuro\Contracts\Csrf;
 use Vokuro\Domain\Model\User;
 use Vokuro\Domain\Session\ForgotPassword;
+use Vokuro\Tests\Support\Fake\FakeCsrf;
 use Vokuro\Tests\Support\Fake\FakeMailer;
 use Vokuro\Tests\Support\Fake\FakeResetPasswordRepository;
 use Vokuro\Tests\Support\Fake\FakeUserRepository;
@@ -41,10 +42,7 @@ final class PostSessionForgotPasswordTest extends AbstractActionTestCase
      */
     public function testBadCsrfRerendersForm(): void
     {
-        $request  = $this->request(['csrf' => 'wrong']);
-        $security = $this->security($request);
-
-        $this->action($security)($request);
+        $this->action(new FakeCsrf(valid: false))($this->request());
 
         $this->assertSame('session/forgotPassword', $this->renderer->calls[0]['path']);
         $this->assertSame([], $this->resets->added);
@@ -57,18 +55,16 @@ final class PostSessionForgotPasswordTest extends AbstractActionTestCase
     {
         $this->users->seed(new User(7, 'Sarah', 's@x.dev', 'h', 2, 'Users', true, false, false, false));
 
-        [$request, $security] = $this->signedRequest(['email' => 's@x.dev']);
-
-        $this->action($security)($request);
+        $this->action(new FakeCsrf())($this->request(['email' => 's@x.dev']));
 
         $this->assertSame('session/forgotPassword', $this->renderer->calls[0]['path']);
         $this->assertCount(1, $this->resets->added);
     }
 
-    private function action(Security $security): PostSessionForgotPassword
+    private function action(Csrf $csrf): PostSessionForgotPassword
     {
         $domain = new ForgotPassword($this->users, $this->resets, new FakeMailer());
 
-        return new PostSessionForgotPassword($domain, $this->authResponder(), $security);
+        return new PostSessionForgotPassword($domain, $this->authResponder(), $csrf);
     }
 }

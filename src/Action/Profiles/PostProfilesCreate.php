@@ -21,9 +21,9 @@ use Phalcon\ADR\Responder\RedirectResponder;
 use Phalcon\Contracts\ADR\Action;
 use Phalcon\Contracts\ADR\Payload\Payload as PayloadInterface;
 use Phalcon\Contracts\Http\AttributeRequest;
-use Phalcon\Encryption\Security;
 use Phalcon\Http\Response;
 use Phalcon\Http\ResponseInterface;
+use Vokuro\Contracts\Csrf;
 use Vokuro\Domain\Profiles\CreateProfile;
 use Vokuro\Responder\PrivateResponder;
 
@@ -36,13 +36,13 @@ final class PostProfilesCreate implements Action
         private CreateProfile $domain,
         private PrivateResponder $view,
         private RedirectResponder $redirect,
-        private Security $security
+        private Csrf $csrf
     ) {
     }
 
     public function __invoke(AttributeRequest $request): ResponseInterface
     {
-        if (false === $this->security->checkToken('csrf', $request->getPost('csrf'))) {
+        if (false === $this->csrf->check($request)) {
             return $this->form($request, Payload::invalid(['csrf' => 'The form has expired, please try again']));
         }
 

@@ -13,11 +13,12 @@ declare(strict_types=1);
 
 namespace Vokuro\Tests\Unit\Action\Permissions;
 
-use Phalcon\Encryption\Security;
 use Vokuro\Action\Permissions\PostPermissions;
 use Vokuro\Application\Acl;
+use Vokuro\Contracts\Csrf;
 use Vokuro\Domain\Model\Profile;
 use Vokuro\Domain\Permissions\SavePermissions;
+use Vokuro\Tests\Support\Fake\FakeCsrf;
 use Vokuro\Tests\Support\Fake\FakePermissionRepository;
 use Vokuro\Tests\Support\Fake\FakeProfileRepository;
 use Vokuro\Tests\Unit\Action\AbstractActionTestCase;
@@ -41,10 +42,7 @@ final class PostPermissionsTest extends AbstractActionTestCase
      */
     public function testBadCsrfRerendersWithMessage(): void
     {
-        $request  = $this->request(['csrf' => 'wrong']);
-        $security = $this->security($request);
-
-        $this->action($security)($request);
+        $this->action(new FakeCsrf(valid: false))($this->request());
 
         $this->assertSame('permissions/index', $this->renderer->calls[0]['path']);
         $this->assertContains(
@@ -58,9 +56,7 @@ final class PostPermissionsTest extends AbstractActionTestCase
      */
     public function testUnknownProfileRerenders(): void
     {
-        [$request, $security] = $this->signedRequest(['profileId' => 999]);
-
-        $this->action($security)($request);
+        $this->action(new FakeCsrf())($this->request(['profileId' => 999]));
 
         $this->assertSame('permissions/index', $this->renderer->calls[0]['path']);
         $this->assertNull($this->renderer->calls[0]['params']['result']['profile']);
@@ -72,9 +68,8 @@ final class PostPermissionsTest extends AbstractActionTestCase
     public function testShowsGrants(): void
     {
         $this->profiles->seed(new Profile(2, 'Users', true));
-        [$request, $security] = $this->signedRequest(['profileId' => 2]);
 
-        $this->action($security)($request);
+        $this->action(new FakeCsrf())($this->request(['profileId' => 2]));
 
         $this->assertSame(2, $this->renderer->calls[0]['params']['result']['profile']);
         $this->assertSame([], $this->permissions->replaced);
@@ -86,19 +81,18 @@ final class PostPermissionsTest extends AbstractActionTestCase
     public function testSavesGrants(): void
     {
         $this->profiles->seed(new Profile(2, 'Users', true));
-        [$request, $security] = $this->signedRequest([
+
+        $this->action(new FakeCsrf())($this->request([
             'profileId'   => 2,
             'submit'      => '1',
             'permissions' => ['users.index'],
-        ]);
-
-        $this->action($security)($request);
+        ]));
 
         $this->assertSame('permissions/index', $this->renderer->calls[0]['path']);
         $this->assertCount(1, $this->permissions->replaced);
     }
 
-    private function action(Security $security): PostPermissions
+    private function action(Csrf $csrf): PostPermissions
     {
         return new PostPermissions(
             new SavePermissions($this->profiles, $this->permissions),
@@ -106,7 +100,7 @@ final class PostPermissionsTest extends AbstractActionTestCase
             $this->permissions,
             new Acl(),
             $this->privateResponder(),
-            $security
+            $csrf
         );
     }
 }

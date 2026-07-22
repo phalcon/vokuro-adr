@@ -13,10 +13,11 @@ declare(strict_types=1);
 
 namespace Vokuro\Tests\Unit\Action\Profiles;
 
-use Phalcon\Encryption\Security;
 use Vokuro\Action\Profiles\PostProfilesEdit;
+use Vokuro\Contracts\Csrf;
 use Vokuro\Domain\Model\Profile;
 use Vokuro\Domain\Profiles\UpdateProfile;
+use Vokuro\Tests\Support\Fake\FakeCsrf;
 use Vokuro\Tests\Support\Fake\FakeProfileRepository;
 use Vokuro\Tests\Support\Fake\FakeUserRepository;
 use Vokuro\Tests\Unit\Action\AbstractActionTestCase;
@@ -38,10 +39,8 @@ final class PostProfilesEditTest extends AbstractActionTestCase
     public function testUpdatesAndRedirects(): void
     {
         $this->seedProfile();
-        [$request, $security] = $this->signedRequest(['name' => 'Managers', 'active' => 'N']);
-        $request->getAttributes()->set(0, 3);
 
-        $response = $this->action($security)($request);
+        $response = $this->action(new FakeCsrf())($this->request(['name' => 'Managers', 'active' => 'N'], [], [0 => 3]));
 
         $this->assertSame(302, $response->getStatusCode());
         $this->assertSame('/profiles', $response->getHeaders()->get('Location'));
@@ -53,10 +52,7 @@ final class PostProfilesEditTest extends AbstractActionTestCase
      */
     public function testNotFoundRedirects(): void
     {
-        [$request, $security] = $this->signedRequest(['name' => 'Managers']);
-        $request->getAttributes()->set(0, 999);
-
-        $response = $this->action($security)($request);
+        $response = $this->action(new FakeCsrf())($this->request(['name' => 'Managers'], [], [0 => 999]));
 
         $this->assertSame(302, $response->getStatusCode());
         $this->assertSame('/profiles', $response->getHeaders()->get('Location'));
@@ -68,10 +64,8 @@ final class PostProfilesEditTest extends AbstractActionTestCase
     public function testInvalidRerendersForm(): void
     {
         $this->seedProfile();
-        [$request, $security] = $this->signedRequest(['name' => '']);
-        $request->getAttributes()->set(0, 3);
 
-        $this->action($security)($request);
+        $this->action(new FakeCsrf())($this->request(['name' => ''], [], [0 => 3]));
 
         $this->assertSame('profiles/edit', $this->renderer->calls[0]['path']);
     }
@@ -82,10 +76,8 @@ final class PostProfilesEditTest extends AbstractActionTestCase
     public function testBadCsrfRerendersForm(): void
     {
         $this->seedProfile();
-        $request  = $this->request(['csrf' => 'wrong'], [], [0 => 3]);
-        $security = $this->security($request);
 
-        $this->action($security)($request);
+        $this->action(new FakeCsrf(valid: false))($this->request([], [], [0 => 3]));
 
         $this->assertSame('profiles/edit', $this->renderer->calls[0]['path']);
     }
@@ -95,16 +87,13 @@ final class PostProfilesEditTest extends AbstractActionTestCase
      */
     public function testBadCsrfMissingProfileRedirects(): void
     {
-        $request  = $this->request(['csrf' => 'wrong'], [], [0 => 999]);
-        $security = $this->security($request);
-
-        $response = $this->action($security)($request);
+        $response = $this->action(new FakeCsrf(valid: false))($this->request([], [], [0 => 999]));
 
         $this->assertSame(302, $response->getStatusCode());
         $this->assertSame('/profiles', $response->getHeaders()->get('Location'));
     }
 
-    private function action(Security $security): PostProfilesEdit
+    private function action(Csrf $csrf): PostProfilesEdit
     {
         return new PostProfilesEdit(
             new UpdateProfile($this->profiles),
@@ -112,7 +101,7 @@ final class PostProfilesEditTest extends AbstractActionTestCase
             new FakeUserRepository(),
             $this->privateResponder(),
             $this->redirectResponder(),
-            $security
+            $csrf
         );
     }
 

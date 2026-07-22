@@ -16,9 +16,11 @@ namespace Vokuro\Tests\Unit\Action\Session;
 use Phalcon\Encryption\Security;
 use Vokuro\Action\Session\PostSessionLogin;
 use Vokuro\Application\RememberMe;
+use Vokuro\Contracts\Csrf;
 use Vokuro\Domain\Model\User;
 use Vokuro\Domain\Session\Login;
 use Vokuro\Tests\Support\Fake\FakeCookies;
+use Vokuro\Tests\Support\Fake\FakeCsrf;
 use Vokuro\Tests\Support\Fake\FakeFailedLoginRepository;
 use Vokuro\Tests\Support\Fake\FakeRememberTokenRepository;
 use Vokuro\Tests\Support\Fake\FakeSuccessLoginRepository;
@@ -47,10 +49,7 @@ final class PostSessionLoginTest extends AbstractActionTestCase
      */
     public function testBadCsrfRerendersForm(): void
     {
-        $request  = $this->request(['csrf' => 'wrong'], server: $this->clientServer());
-        $security = $this->security($request);
-
-        $response = $this->action($security)($request);
+        $response = $this->action(new FakeCsrf(valid: false))($this->request(server: $this->clientServer()));
 
         $this->assertSame('session/login', $this->renderer->calls[0]['path']);
         $this->assertSame(422, $response->getStatusCode());
@@ -62,12 +61,8 @@ final class PostSessionLoginTest extends AbstractActionTestCase
      */
     public function testWrongCredentialsRerenderAndRecord(): void
     {
-        [$request, $security] = $this->signedRequest(
-            ['email' => 'sarah@x.dev', 'password' => 'wrong'],
-            $this->clientServer()
-        );
-
-        $response = $this->action($security)($request);
+        $request  = $this->request(['email' => 'sarah@x.dev', 'password' => 'wrong'], server: $this->clientServer());
+        $response = $this->action(new FakeCsrf())($request);
 
         $this->assertSame('session/login', $this->renderer->calls[0]['path']);
         $this->assertNotSame(302, $response->getStatusCode());
@@ -81,12 +76,8 @@ final class PostSessionLoginTest extends AbstractActionTestCase
     {
         $this->seedUser('secret');
 
-        [$request, $security] = $this->signedRequest(
-            ['email' => 'sarah@x.dev', 'password' => 'secret'],
-            $this->clientServer()
-        );
-
-        $response = $this->action($security)($request);
+        $request  = $this->request(['email' => 'sarah@x.dev', 'password' => 'secret'], server: $this->clientServer());
+        $response = $this->action(new FakeCsrf())($request);
 
         $this->assertSame(302, $response->getStatusCode());
         $this->assertSame('/', $response->getHeaders()->get('Location'));
@@ -101,17 +92,16 @@ final class PostSessionLoginTest extends AbstractActionTestCase
     {
         $this->seedUser('secret');
 
-        [$request, $security] = $this->signedRequest(
+        $request = $this->request(
             ['email' => 'sarah@x.dev', 'password' => 'secret', 'remember' => 'yes'],
-            $this->clientServer()
+            server: $this->clientServer()
         );
-
-        $this->action($security)($request);
+        $this->action(new FakeCsrf())($request);
 
         $this->assertCount(1, $this->tokens->added);
     }
 
-    private function action(Security $security): PostSessionLogin
+    private function action(Csrf $csrf): PostSessionLogin
     {
         $domain = new Login(
             $this->users,
@@ -127,7 +117,7 @@ final class PostSessionLoginTest extends AbstractActionTestCase
             $this->authResponder(),
             $this->redirectResponder(),
             $this->session,
-            $security,
+            $csrf,
             $rememberMe
         );
     }

@@ -21,11 +21,11 @@ use Phalcon\ADR\Responder\RedirectResponder;
 use Phalcon\Contracts\ADR\Action;
 use Phalcon\Contracts\ADR\Payload\Payload as PayloadInterface;
 use Phalcon\Contracts\Http\AttributeRequest;
-use Phalcon\Encryption\Security;
 use Phalcon\Http\Response;
 use Phalcon\Http\ResponseInterface;
 use Phalcon\Session\ManagerInterface;
 use Vokuro\Application\RememberMe;
+use Vokuro\Contracts\Csrf;
 use Vokuro\Domain\Session\Login;
 use Vokuro\Responder\AuthResponder;
 
@@ -43,7 +43,7 @@ final class PostSessionLogin implements Action
         private AuthResponder $view,
         private RedirectResponder $redirect,
         private ManagerInterface $session,
-        private Security $security,
+        private Csrf $csrf,
         private RememberMe $rememberMe
     ) {
     }
@@ -56,7 +56,7 @@ final class PostSessionLogin implements Action
          * cannot be given, while asking for the key would mint a new one and
          * invalidate the token that was just rendered.
          */
-        if (false === $this->security->checkToken('csrf', $request->getPost('csrf'))) {
+        if (false === $this->csrf->check($request)) {
             return $this->form(
                 $request,
                 Payload::invalid(['The form has expired, please try again'])

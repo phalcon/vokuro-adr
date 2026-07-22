@@ -3,7 +3,7 @@
 /**
  * @var array                         $messages field => message
  * @var array                         $result   profiles
- * @var \Phalcon\Encryption\Security  $security
+ * @var \Vokuro\Contracts\Csrf        $csrf
  * @var \Phalcon\Html\TagFactory      $tag
  * @var \Phalcon\Mvc\Url\UrlInterface $url
  */
@@ -51,7 +51,7 @@ $profileSelect = $tag->inputSelect('', '', ['name' => 'profilesId', 'class' => '
             <?= $error('profilesId') ?>
         </div>
 
-        <?= $tag->inputHidden('csrf', $security->getToken()) ?>
+        <?= $tag->inputHidden('csrf', $csrf->token()) ?>
         <?= $error('csrf') ?>
 
         <?= $tag->inputSubmit('save', 'Save', ['class' => 'btn']) ?>

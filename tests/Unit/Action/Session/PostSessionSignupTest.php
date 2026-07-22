@@ -15,7 +15,9 @@ namespace Vokuro\Tests\Unit\Action\Session;
 
 use Phalcon\Encryption\Security;
 use Vokuro\Action\Session\PostSessionSignup;
+use Vokuro\Contracts\Csrf;
 use Vokuro\Domain\Session\SignUp;
+use Vokuro\Tests\Support\Fake\FakeCsrf;
 use Vokuro\Tests\Support\Fake\FakeEmailConfirmationRepository;
 use Vokuro\Tests\Support\Fake\FakeMailer;
 use Vokuro\Tests\Support\Fake\FakeUserRepository;
@@ -37,10 +39,7 @@ final class PostSessionSignupTest extends AbstractActionTestCase
      */
     public function testBadCsrfRerendersForm(): void
     {
-        $request  = $this->request(['csrf' => 'wrong']);
-        $security = $this->security($request);
-
-        $this->action($security)($request);
+        $this->action(new FakeCsrf(valid: false))($this->request());
 
         $this->assertSame('session/signup', $this->renderer->calls[0]['path']);
         $this->assertSame([], $this->users->added);
@@ -51,7 +50,7 @@ final class PostSessionSignupTest extends AbstractActionTestCase
      */
     public function testValidSubmissionRegisters(): void
     {
-        [$request, $security] = $this->signedRequest([
+        $request = $this->request([
             'name'            => 'Kyle Reese',
             'email'           => 'kyle@resistance.dev',
             'password'        => 'abcdefgh',
@@ -59,13 +58,13 @@ final class PostSessionSignupTest extends AbstractActionTestCase
             'terms'           => 'yes',
         ]);
 
-        $this->action($security)($request);
+        $this->action(new FakeCsrf())($request);
 
         $this->assertSame('session/signup', $this->renderer->calls[0]['path']);
         $this->assertCount(1, $this->users->added);
     }
 
-    private function action(Security $security): PostSessionSignup
+    private function action(Csrf $csrf): PostSessionSignup
     {
         $domain = new SignUp(
             $this->users,
@@ -74,6 +73,6 @@ final class PostSessionSignupTest extends AbstractActionTestCase
             new FakeMailer()
         );
 
-        return new PostSessionSignup($domain, $this->authResponder(), $security);
+        return new PostSessionSignup($domain, $this->authResponder(), $csrf);
     }
 }

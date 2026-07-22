@@ -2,7 +2,7 @@
 
 /**
  * @var array                         $messages
- * @var \Phalcon\Encryption\Security  $security
+ * @var \Vokuro\Contracts\Csrf        $csrf
  * @var \Phalcon\Html\TagFactory      $tag
  * @var \Phalcon\Mvc\Url\UrlInterface $url
  */
@@ -43,7 +43,7 @@ $form->setTagFactory($tag);
         <?= $form->label('remember') ?>
     </div>
 
-    <?= $tag->inputHidden('csrf', $security->getToken()) ?>
+    <?= $tag->inputHidden('csrf', $csrf->token()) ?>
 
     <?= $form->render('Login', ['class' => 'btn']) ?>
 </form>

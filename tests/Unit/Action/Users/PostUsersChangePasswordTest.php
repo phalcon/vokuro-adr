@@ -15,8 +15,10 @@ namespace Vokuro\Tests\Unit\Action\Users;
 
 use Phalcon\Encryption\Security;
 use Vokuro\Action\Users\PostUsersChangePassword;
+use Vokuro\Contracts\Csrf;
 use Vokuro\Domain\Model\User;
 use Vokuro\Domain\Users\ChangePassword;
+use Vokuro\Tests\Support\Fake\FakeCsrf;
 use Vokuro\Tests\Support\Fake\FakePasswordChangeRepository;
 use Vokuro\Tests\Support\Fake\FakeUserRepository;
 use Vokuro\Tests\Unit\Action\AbstractActionTestCase;
@@ -38,10 +40,7 @@ final class PostUsersChangePasswordTest extends AbstractActionTestCase
      */
     public function testBadCsrfRerendersForm(): void
     {
-        $request  = $this->request(['csrf' => 'wrong'], server: $this->clientServer());
-        $security = $this->security($request);
-
-        $this->action($security)($request);
+        $this->action(new FakeCsrf(valid: false))($this->request(server: $this->clientServer()));
 
         $this->assertSame('users/changePassword', $this->renderer->calls[0]['path']);
     }
@@ -52,12 +51,12 @@ final class PostUsersChangePasswordTest extends AbstractActionTestCase
     public function testInvalidRerendersForm(): void
     {
         $this->users->seed($this->user());
-        [$request, $security] = $this->signedRequest(
-            ['password' => 'short', 'confirmPassword' => 'short'],
-            $this->clientServer()
-        );
 
-        $this->action($security)($request);
+        $request = $this->request(
+            ['password' => 'short', 'confirmPassword' => 'short'],
+            server: $this->clientServer()
+        );
+        $this->action(new FakeCsrf())($request);
 
         $this->assertSame('users/changePassword', $this->renderer->calls[0]['path']);
     }
@@ -68,19 +67,19 @@ final class PostUsersChangePasswordTest extends AbstractActionTestCase
     public function testChangesAndRedirects(): void
     {
         $this->users->seed($this->user());
-        [$request, $security] = $this->signedRequest(
-            ['password' => 'newpassword1', 'confirmPassword' => 'newpassword1'],
-            $this->clientServer()
-        );
 
-        $response = $this->action($security)($request);
+        $request = $this->request(
+            ['password' => 'newpassword1', 'confirmPassword' => 'newpassword1'],
+            server: $this->clientServer()
+        );
+        $response = $this->action(new FakeCsrf())($request);
 
         $this->assertSame(302, $response->getStatusCode());
         $this->assertSame('/users', $response->getHeaders()->get('Location'));
         $this->assertArrayHasKey(7, $this->users->updated);
     }
 
-    private function action(Security $security): PostUsersChangePassword
+    private function action(Csrf $csrf): PostUsersChangePassword
     {
         $domain = new ChangePassword($this->users, new FakePasswordChangeRepository(), new Security());
 
@@ -88,7 +87,7 @@ final class PostUsersChangePasswordTest extends AbstractActionTestCase
             $domain,
             $this->privateResponder(),
             $this->redirectResponder(),
-            $security,
+            $csrf,
             $this->session
         );
     }

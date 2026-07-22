@@ -42,6 +42,7 @@ use Vokuro\Application\Authorizer;
 use Vokuro\Application\RememberMe;
 use Vokuro\Contracts\Authorization;
 use Vokuro\Contracts\Cookies as CookiesInterface;
+use Vokuro\Contracts\Csrf as CsrfInterface;
 use Vokuro\Contracts\Mailer as MailerInterface;
 use Vokuro\Contracts\Repository\EmailConfirmationRepository as EmailConfirmationRepositoryInterface;
 use Vokuro\Contracts\Repository\FailedLoginRepository as FailedLoginRepositoryInterface;
@@ -53,6 +54,7 @@ use Vokuro\Contracts\Repository\ResetPasswordRepository as ResetPasswordReposito
 use Vokuro\Contracts\Repository\SuccessLoginRepository as SuccessLoginRepositoryInterface;
 use Vokuro\Contracts\Repository\UserRepository as UserRepositoryInterface;
 use Vokuro\Infrastructure\Http\Cookies;
+use Vokuro\Infrastructure\Http\Csrf;
 use Vokuro\Infrastructure\Mail\Mailer;
 use Vokuro\Infrastructure\Repository\EmailConfirmationRepository;
 use Vokuro\Infrastructure\Repository\FailedLoginRepository;
@@ -218,6 +220,7 @@ class AppFront extends AbstractHttpFront
         );
         $container->setAlias(DispatcherContract::class, 'dispatcher');
         $container->bind(CookiesInterface::class, Cookies::class);
+        $container->bind(CsrfInterface::class, Csrf::class);
         $container->bind(
             RememberTokenRepositoryInterface::class,
             RememberTokenRepository::class
@@ -283,7 +286,7 @@ class AppFront extends AbstractHttpFront
         $view->setViewsDir($this->projectRoot . '/resources/views/');
         $view->setVar('tag', $container->get(TagFactory::class));
         $view->setVar('url', $container->get(UrlInterface::class));
-        $view->setVar('security', $container->get(Security::class));
+        $view->setVar('csrf', $container->get(CsrfInterface::class));
 
         return new LayoutRenderer(
             $view,

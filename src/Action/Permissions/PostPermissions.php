@@ -17,10 +17,10 @@ use Phalcon\ADR\Input\Input;
 use Phalcon\ADR\Payload\Payload;
 use Phalcon\Contracts\ADR\Action;
 use Phalcon\Contracts\Http\AttributeRequest;
-use Phalcon\Encryption\Security;
 use Phalcon\Http\Response;
 use Phalcon\Http\ResponseInterface;
 use Vokuro\Application\Acl;
+use Vokuro\Contracts\Csrf;
 use Vokuro\Contracts\Repository\PermissionRepository;
 use Vokuro\Contracts\Repository\ProfileRepository;
 use Vokuro\Domain\Permissions\SavePermissions;
@@ -38,7 +38,7 @@ final class PostPermissions implements Action
         private PermissionRepository $permissions,
         private Acl $acl,
         private PrivateResponder $responder,
-        private Security $security
+        private Csrf $csrf
     ) {
     }
 
@@ -46,7 +46,7 @@ final class PostPermissions implements Action
     {
         $messages = [];
 
-        if (false === $this->security->checkToken('csrf', $request->getPost('csrf'))) {
+        if (false === $this->csrf->check($request)) {
             return $this->render($request, null, ['The form has expired, please try again']);
         }
 

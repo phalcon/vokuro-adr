@@ -3,7 +3,7 @@
 /**
  * @var array                         $messages field => message
  * @var array                         $result   user + profiles
- * @var \Phalcon\Encryption\Security  $security
+ * @var \Vokuro\Contracts\Csrf        $csrf
  * @var \Phalcon\Html\TagFactory      $tag
  * @var \Phalcon\Mvc\Url\UrlInterface $url
  */
@@ -64,7 +64,7 @@ $profileSelect = $tag->inputSelect('', '', ['name' => 'profilesId', 'class' => '
         <div class="field"><label>Banned?</label><?= $yesNo('banned', $user->banned) ?></div>
         <div class="field"><label>Confirmed?</label><?= $yesNo('active', $user->active) ?></div>
 
-        <?= $tag->inputHidden('csrf', $security->getToken()) ?>
+        <?= $tag->inputHidden('csrf', $csrf->token()) ?>
         <?= $tag->inputSubmit('save', 'Save', ['class' => 'btn']) ?>
     </div>
 </form>

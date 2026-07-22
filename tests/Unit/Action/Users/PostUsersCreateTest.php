@@ -15,7 +15,9 @@ namespace Vokuro\Tests\Unit\Action\Users;
 
 use Phalcon\Encryption\Security;
 use Vokuro\Action\Users\PostUsersCreate;
+use Vokuro\Contracts\Csrf;
 use Vokuro\Domain\Users\CreateUser;
+use Vokuro\Tests\Support\Fake\FakeCsrf;
 use Vokuro\Tests\Support\Fake\FakeEmailConfirmationRepository;
 use Vokuro\Tests\Support\Fake\FakeMailer;
 use Vokuro\Tests\Support\Fake\FakeProfileRepository;
@@ -38,10 +40,7 @@ final class PostUsersCreateTest extends AbstractActionTestCase
      */
     public function testBadCsrfRerendersForm(): void
     {
-        $request  = $this->request(['csrf' => 'wrong']);
-        $security = $this->security($request);
-
-        $this->action($security)($request);
+        $this->action(new FakeCsrf(valid: false))($this->request());
 
         $this->assertSame('users/create', $this->renderer->calls[0]['path']);
         $this->assertSame([], $this->users->added);
@@ -52,9 +51,9 @@ final class PostUsersCreateTest extends AbstractActionTestCase
      */
     public function testInvalidRerendersForm(): void
     {
-        [$request, $security] = $this->signedRequest(['name' => '', 'email' => 'kate@x.dev', 'profilesId' => 2]);
+        $request = $this->request(['name' => '', 'email' => 'kate@x.dev', 'profilesId' => 2]);
 
-        $this->action($security)($request);
+        $this->action(new FakeCsrf())($request);
 
         $this->assertSame('users/create', $this->renderer->calls[0]['path']);
         $this->assertSame([], $this->users->added);
@@ -65,16 +64,16 @@ final class PostUsersCreateTest extends AbstractActionTestCase
      */
     public function testCreatesAndRedirects(): void
     {
-        [$request, $security] = $this->signedRequest(['name' => 'Kate', 'email' => 'kate@x.dev', 'profilesId' => 2]);
+        $request = $this->request(['name' => 'Kate', 'email' => 'kate@x.dev', 'profilesId' => 2]);
 
-        $response = $this->action($security)($request);
+        $response = $this->action(new FakeCsrf())($request);
 
         $this->assertSame(302, $response->getStatusCode());
         $this->assertSame('/users', $response->getHeaders()->get('Location'));
         $this->assertCount(1, $this->users->added);
     }
 
-    private function action(Security $security): PostUsersCreate
+    private function action(Csrf $csrf): PostUsersCreate
     {
         $domain = new CreateUser(
             $this->users,
@@ -88,7 +87,7 @@ final class PostUsersCreateTest extends AbstractActionTestCase
             new FakeProfileRepository(),
             $this->privateResponder(),
             $this->redirectResponder(),
-            $security
+            $csrf
         );
     }
 }

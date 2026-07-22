@@ -17,9 +17,9 @@ use Phalcon\ADR\Input\Input;
 use Phalcon\ADR\Payload\Payload;
 use Phalcon\Contracts\ADR\Action;
 use Phalcon\Contracts\Http\AttributeRequest;
-use Phalcon\Encryption\Security;
 use Phalcon\Http\Response;
 use Phalcon\Http\ResponseInterface;
+use Vokuro\Contracts\Csrf;
 use Vokuro\Domain\Session\SignUp;
 use Vokuro\Responder\AuthResponder;
 
@@ -32,7 +32,7 @@ final class PostSessionSignup implements Action
     public function __construct(
         private SignUp $domain,
         private AuthResponder $responder,
-        private Security $security
+        private Csrf $csrf
     ) {
     }
 
@@ -42,7 +42,7 @@ final class PostSessionSignup implements Action
             ['csrf' => 'The form has expired, please try again']
         );
 
-        if (true === $this->security->checkToken('csrf', $request->getPost('csrf'))) {
+        if (true === $this->csrf->check($request)) {
             $payload = ($this->domain)(Input::fromRequest($request));
         }
 

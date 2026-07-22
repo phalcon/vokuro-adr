@@ -16,16 +16,6 @@ namespace Vokuro\Tests\Unit\Action;
 final class HarnessTest extends AbstractActionTestCase
 {
     /**
-     * Action harness :: a generated CSRF token validates against its Security
-     */
-    public function testValidCsrfRoundTrips(): void
-    {
-        [$request, $security] = $this->signedRequest();
-
-        $this->assertTrue($security->checkToken('csrf', $request->getPost('csrf')));
-    }
-
-    /**
      * Action harness :: route attributes set on the request are readable
      */
     public function testRouteAttributesAreReadable(): void

@@ -16,7 +16,6 @@ namespace Vokuro\Tests\Unit\Action;
 use Phalcon\ADR\Responder\RedirectResponder;
 use Phalcon\ADR\Responder\StatusMapper;
 use Phalcon\ADR\Responder\ViewResponder;
-use Phalcon\Encryption\Security;
 use Phalcon\Http\Request;
 use Phalcon\Talon\PHPUnit\AbstractUnitTestCase;
 use Vokuro\Responder\AuthResponder;
@@ -26,8 +25,8 @@ use Vokuro\Tests\Support\Fake\FakeSession;
 
 /**
  * Base for action tests: real responders over one shared FakeRenderer, a
- * FakeSession, a real-Request builder (superglobals + route attributes), and a
- * CSRF-token helper. Collaborators come from tests/Support/Fake.
+ * FakeSession, and a real-Request builder (superglobals + route attributes).
+ * Collaborators come from tests/Support/Fake.
  */
 abstract class AbstractActionTestCase extends AbstractUnitTestCase
 {
@@ -98,34 +97,6 @@ abstract class AbstractActionTestCase extends AbstractUnitTestCase
         }
 
         return $request;
-    }
-
-    protected function security(Request $request): Security
-    {
-        return new Security($this->session, $request);
-    }
-
-    /**
-     * A request whose posted `csrf` is valid for the returned Security. POST
-     * actions read the token off the request and check it against this Security.
-     *
-     * @param array<string, mixed> $post
-     * @param array<string, mixed> $server
-     *
-     * @return array{0: Request, 1: Security}
-     */
-    protected function signedRequest(array $post = [], array $server = []): array
-    {
-        $request       = $this->request($post, [], [], $server);
-        $security      = $this->security($request);
-        $_POST['csrf'] = $this->validCsrf($security);
-
-        return [$request, $security];
-    }
-
-    protected function validCsrf(Security $security): string
-    {
-        return $security->getToken();
     }
 
     protected function viewResponder(): ViewResponder

@@ -21,9 +21,9 @@ use Phalcon\ADR\Responder\RedirectResponder;
 use Phalcon\Contracts\ADR\Action;
 use Phalcon\Contracts\ADR\Payload\Payload as PayloadInterface;
 use Phalcon\Contracts\Http\AttributeRequest;
-use Phalcon\Encryption\Security;
 use Phalcon\Http\Response;
 use Phalcon\Http\ResponseInterface;
+use Vokuro\Contracts\Csrf;
 use Vokuro\Contracts\Repository\ProfileRepository;
 use Vokuro\Contracts\Repository\UserRepository;
 use Vokuro\Domain\Profiles\UpdateProfile;
@@ -40,7 +40,7 @@ final class PostProfilesEdit implements Action
         private UserRepository $users,
         private PrivateResponder $view,
         private RedirectResponder $redirect,
-        private Security $security
+        private Csrf $csrf
     ) {
     }
 
@@ -48,7 +48,7 @@ final class PostProfilesEdit implements Action
     {
         $id = (int) $request->getAttributes()->get(0);
 
-        if (false === $this->security->checkToken('csrf', $request->getPost('csrf'))) {
+        if (false === $this->csrf->check($request)) {
             return $this->form($request, $id, Payload::invalid(['csrf' => 'The form has expired, please try again']));
         }
 

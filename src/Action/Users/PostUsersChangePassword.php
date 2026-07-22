@@ -21,10 +21,10 @@ use Phalcon\ADR\Responder\RedirectResponder;
 use Phalcon\Contracts\ADR\Action;
 use Phalcon\Contracts\ADR\Payload\Payload as PayloadInterface;
 use Phalcon\Contracts\Http\AttributeRequest;
-use Phalcon\Encryption\Security;
 use Phalcon\Http\Response;
 use Phalcon\Http\ResponseInterface;
 use Phalcon\Session\ManagerInterface;
+use Vokuro\Contracts\Csrf;
 use Vokuro\Domain\Users\ChangePassword;
 use Vokuro\Responder\PrivateResponder;
 
@@ -38,14 +38,14 @@ final class PostUsersChangePassword implements Action
         private ChangePassword $domain,
         private PrivateResponder $view,
         private RedirectResponder $redirect,
-        private Security $security,
+        private Csrf $csrf,
         private ManagerInterface $session
     ) {
     }
 
     public function __invoke(AttributeRequest $request): ResponseInterface
     {
-        if (false === $this->security->checkToken('csrf', $request->getPost('csrf'))) {
+        if (false === $this->csrf->check($request)) {
             return $this->form($request, Payload::invalid(['csrf' => 'The form has expired, please try again']));
         }
 
