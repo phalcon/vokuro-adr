@@ -8,9 +8,7 @@
 coverage:
   paths:
     - tests/_output/coverage.xml
-  # TEMPORARY: relaxed while the test suite is built out. Restore to
-  # "current >= 100% && diff >= 0" once coverage is complete.
-  acceptable: "current >= 0% && diff >= 0"
+  acceptable: "current >= 100% && diff >= 0"
   badge:
     path: tests/_output/coverage.svg
 codeToTestRatio:
