@@ -16,10 +16,10 @@ namespace Vokuro\Tests\Unit\Domain\Permissions;
 use Phalcon\ADR\Input\Input;
 use Phalcon\ADR\Payload\Status;
 use Phalcon\Talon\PHPUnit\AbstractUnitTestCase;
-use Vokuro\Contracts\Repository\PermissionRepository;
-use Vokuro\Contracts\Repository\ProfileRepository;
 use Vokuro\Domain\Model\Profile;
 use Vokuro\Domain\Permissions\SavePermissions;
+use Vokuro\Tests\Support\Fake\FakePermissionRepository;
+use Vokuro\Tests\Support\Fake\FakeProfileRepository;
 
 final class SavePermissionsTest extends AbstractUnitTestCase
 {
@@ -28,17 +28,14 @@ final class SavePermissionsTest extends AbstractUnitTestCase
      */
     public function testProfileNotFound(): void
     {
-        $profiles = $this->createMock(ProfileRepository::class);
-        $profiles->method('findById')->willReturn(null);
+        $permissions = new FakePermissionRepository();
 
-        $permissions = $this->createMock(PermissionRepository::class);
-        $permissions->expects($this->never())->method('replaceForProfile');
-
-        $payload = (new SavePermissions($profiles, $permissions))(
+        $payload = (new SavePermissions(new FakeProfileRepository(), $permissions))(
             new Input(['profileId' => 99, 'permissions' => ['users.index']])
         );
 
         $this->assertSame(Status::NOT_FOUND, $payload->getStatus());
+        $this->assertSame([], $permissions->replaced);
     }
 
     /**
@@ -46,18 +43,17 @@ final class SavePermissionsTest extends AbstractUnitTestCase
      */
     public function testReplacesGrants(): void
     {
-        $profiles = $this->createMock(ProfileRepository::class);
-        $profiles->method('findById')->willReturn(new Profile(1, 'Admins', true));
+        $profiles = new FakeProfileRepository();
+        $profiles->seed(new Profile(1, 'Admins', true));
 
-        $permissions = $this->createMock(PermissionRepository::class);
-        $permissions->expects($this->once())->method('replaceForProfile')
-                    ->with(1, ['users.index', 'users.edit']);
+        $permissions = new FakePermissionRepository();
 
         $payload = (new SavePermissions($profiles, $permissions))(
             new Input(['profileId' => 1, 'permissions' => ['users.index', 'users.edit']])
         );
 
         $this->assertSame(Status::UPDATED, $payload->getStatus());
+        $this->assertSame(['profileId' => 1, 'pairs' => ['users.index', 'users.edit']], $permissions->replaced[0]);
     }
 
     /**
@@ -65,14 +61,14 @@ final class SavePermissionsTest extends AbstractUnitTestCase
      */
     public function testClearsWhenNoneChecked(): void
     {
-        $profiles = $this->createMock(ProfileRepository::class);
-        $profiles->method('findById')->willReturn(new Profile(1, 'Admins', true));
+        $profiles = new FakeProfileRepository();
+        $profiles->seed(new Profile(1, 'Admins', true));
 
-        $permissions = $this->createMock(PermissionRepository::class);
-        $permissions->expects($this->once())->method('replaceForProfile')->with(1, []);
+        $permissions = new FakePermissionRepository();
 
         $payload = (new SavePermissions($profiles, $permissions))(new Input(['profileId' => 1]));
 
         $this->assertSame(Status::UPDATED, $payload->getStatus());
+        $this->assertSame(['profileId' => 1, 'pairs' => []], $permissions->replaced[0]);
     }
 }

@@ -16,9 +16,9 @@ namespace Vokuro\Tests\Unit\Domain\Users;
 use Phalcon\ADR\Input\Input;
 use Phalcon\ADR\Payload\Status;
 use Phalcon\Talon\PHPUnit\AbstractUnitTestCase;
-use Vokuro\Contracts\Repository\UserRepository;
 use Vokuro\Domain\Model\User;
 use Vokuro\Domain\Users\UpdateUser;
+use Vokuro\Tests\Support\Fake\FakeUserRepository;
 
 final class UpdateUserTest extends AbstractUnitTestCase
 {
@@ -27,12 +27,12 @@ final class UpdateUserTest extends AbstractUnitTestCase
      */
     public function testNotFound(): void
     {
-        $users = $this->createMock(UserRepository::class);
-        $users->method('findById')->willReturn(null);
+        $users = new FakeUserRepository();
 
         $payload = (new UpdateUser($users))(new Input(['id' => 99]));
 
         $this->assertSame(Status::NOT_FOUND, $payload->getStatus());
+        $this->assertSame([], $users->updated);
     }
 
     /**
@@ -40,9 +40,9 @@ final class UpdateUserTest extends AbstractUnitTestCase
      */
     public function testEmailCollision(): void
     {
-        $users = $this->createMock(UserRepository::class);
-        $users->method('findById')->willReturn($this->user(1));
-        $users->method('findByEmail')->willReturn($this->user(2));
+        $users = new FakeUserRepository();
+        $users->seed($this->user(1, 's@x.dev'));
+        $users->seed($this->user(2, 'taken@x.dev'));
 
         $payload = (new UpdateUser($users))(
             new Input(['id' => 1, 'name' => 'Sarah', 'email' => 'taken@x.dev', 'profilesId' => 2])
@@ -50,6 +50,7 @@ final class UpdateUserTest extends AbstractUnitTestCase
 
         $this->assertSame(Status::NOT_VALID, $payload->getStatus());
         $this->assertArrayHasKey('email', (array) $payload->getMessages());
+        $this->assertSame([], $users->updated);
     }
 
     /**
@@ -57,13 +58,8 @@ final class UpdateUserTest extends AbstractUnitTestCase
      */
     public function testUpdatesAndNormalisesFlags(): void
     {
-        $users = $this->createMock(UserRepository::class);
-        $users->method('findById')->willReturn($this->user(1));
-        $users->method('findByEmail')->willReturn($this->user(1));
-        $users->expects($this->once())->method('update')
-              ->with(1, $this->callback(
-                  fn(array $f): bool => 'Y' === $f['banned'] && 'N' === $f['suspended'] && 'N' === $f['active']
-              ));
+        $users = new FakeUserRepository();
+        $users->seed($this->user(1, 's@x.dev'));
 
         $payload = (new UpdateUser($users))(new Input([
             'id'         => 1,
@@ -76,10 +72,13 @@ final class UpdateUserTest extends AbstractUnitTestCase
         ]));
 
         $this->assertSame(Status::UPDATED, $payload->getStatus());
+        $this->assertSame('Y', $users->updated[1]['banned']);
+        $this->assertSame('N', $users->updated[1]['suspended']);
+        $this->assertSame('N', $users->updated[1]['active']);
     }
 
-    private function user(int $id): User
+    private function user(int $id, string $email): User
     {
-        return new User($id, 'Sarah', 's@x.dev', 'h', 2, 'Users', true, false, false, false);
+        return new User($id, 'Sarah', $email, 'h', 2, 'Users', true, false, false, false);
     }
 }

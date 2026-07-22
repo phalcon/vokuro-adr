@@ -17,11 +17,11 @@ use Phalcon\ADR\Input\Input;
 use Phalcon\ADR\Payload\Status;
 use Phalcon\Encryption\Security;
 use Phalcon\Talon\PHPUnit\AbstractUnitTestCase;
-use Vokuro\Contracts\Mailer;
-use Vokuro\Contracts\Repository\EmailConfirmationRepository;
-use Vokuro\Contracts\Repository\UserRepository;
 use Vokuro\Domain\Model\User;
 use Vokuro\Domain\Users\CreateUser;
+use Vokuro\Tests\Support\Fake\FakeEmailConfirmationRepository;
+use Vokuro\Tests\Support\Fake\FakeMailer;
+use Vokuro\Tests\Support\Fake\FakeUserRepository;
 
 final class CreateUserTest extends AbstractUnitTestCase
 {
@@ -30,23 +30,19 @@ final class CreateUserTest extends AbstractUnitTestCase
      */
     public function testCreatesInactiveUser(): void
     {
-        $users = $this->createMock(UserRepository::class);
-        $users->method('findByEmail')->willReturn(null);
-        $users->expects($this->once())->method('add')
-              ->with($this->callback(fn(array $u): bool => 'N' === $u['active'] && 'Y' === $u['mustChangePassword']))
-              ->willReturn(9);
-
-        $confirmations = $this->createMock(EmailConfirmationRepository::class);
-        $confirmations->expects($this->once())->method('add')->willReturn('code');
-
-        $mailer = $this->createMock(Mailer::class);
-        $mailer->expects($this->once())->method('send');
+        $users         = new FakeUserRepository();
+        $confirmations = new FakeEmailConfirmationRepository();
+        $mailer        = new FakeMailer();
 
         $payload = (new CreateUser($users, $confirmations, new Security(), $mailer))(
             new Input(['name' => 'Kate', 'email' => 'kate@x.dev', 'profilesId' => 2])
         );
 
         $this->assertSame(Status::CREATED, $payload->getStatus());
+        $this->assertSame('N', $users->added[1]['active']);
+        $this->assertSame('Y', $users->added[1]['mustChangePassword']);
+        $this->assertCount(1, $confirmations->added);
+        $this->assertCount(1, $mailer->sent);
     }
 
     /**
@@ -58,21 +54,22 @@ final class CreateUserTest extends AbstractUnitTestCase
      */
     public function testValidation(array $overrides, string $field, bool $duplicate = false): void
     {
-        $users = $this->createMock(UserRepository::class);
-        $users->method('findByEmail')->willReturn(
-            $duplicate ? new User(1, 'x', 'x@x.dev', 'h', 2, 'Users', true, false, false, false) : null
-        );
-        $users->expects($this->never())->method('add');
+        $users = new FakeUserRepository();
+
+        if (true === $duplicate) {
+            $users->seed(new User(1, 'x', 'kate@x.dev', 'h', 2, 'Users', true, false, false, false));
+        }
 
         $payload = (new CreateUser(
             $users,
-            $this->createMock(EmailConfirmationRepository::class),
+            new FakeEmailConfirmationRepository(),
             new Security(),
-            $this->createMock(Mailer::class)
+            new FakeMailer()
         ))(new Input($overrides + ['name' => 'Kate', 'email' => 'kate@x.dev', 'profilesId' => 2]));
 
         $this->assertSame(Status::NOT_VALID, $payload->getStatus());
         $this->assertArrayHasKey($field, (array) $payload->getMessages());
+        $this->assertSame([], $users->added);
     }
 
     /**

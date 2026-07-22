@@ -16,11 +16,11 @@ namespace Vokuro\Tests\Unit\Domain\Session;
 use Phalcon\ADR\Input\Input;
 use Phalcon\ADR\Payload\Status;
 use Phalcon\Talon\PHPUnit\AbstractUnitTestCase;
-use Vokuro\Contracts\Mailer;
-use Vokuro\Contracts\Repository\ResetPasswordRepository;
-use Vokuro\Contracts\Repository\UserRepository;
 use Vokuro\Domain\Model\User;
 use Vokuro\Domain\Session\ForgotPassword;
+use Vokuro\Tests\Support\Fake\FakeMailer;
+use Vokuro\Tests\Support\Fake\FakeResetPasswordRepository;
+use Vokuro\Tests\Support\Fake\FakeUserRepository;
 
 final class ForgotPasswordTest extends AbstractUnitTestCase
 {
@@ -29,9 +29,16 @@ final class ForgotPasswordTest extends AbstractUnitTestCase
      */
     public function testInvalidEmail(): void
     {
-        $payload = $this->domain()(new Input(['email' => 'not-an-email']));
+        $resets = new FakeResetPasswordRepository();
+        $mailer = new FakeMailer();
+
+        $payload = (new ForgotPassword(new FakeUserRepository(), $resets, $mailer))(
+            new Input(['email' => 'not-an-email'])
+        );
 
         $this->assertSame(Status::NOT_VALID, $payload->getStatus());
+        $this->assertSame([], $resets->added);
+        $this->assertSame([], $mailer->sent);
     }
 
     /**
@@ -39,18 +46,17 @@ final class ForgotPasswordTest extends AbstractUnitTestCase
      */
     public function testKnownEmailIssuesAndMails(): void
     {
-        $users = $this->createMock(UserRepository::class);
-        $users->method('findByEmail')->willReturn($this->user());
+        $users = new FakeUserRepository();
+        $users->seed(new User(7, 'Sarah', 's@x.dev', 'h', 2, 'Users', true, false, false, false));
 
-        $resets = $this->createMock(ResetPasswordRepository::class);
-        $resets->expects($this->once())->method('add')->willReturn('code');
+        $resets = new FakeResetPasswordRepository();
+        $mailer = new FakeMailer();
 
-        $mailer = $this->createMock(Mailer::class);
-        $mailer->expects($this->once())->method('send');
-
-        $payload = $this->domain($users, $resets, $mailer)(new Input(['email' => 's@x.dev']));
+        $payload = (new ForgotPassword($users, $resets, $mailer))(new Input(['email' => 's@x.dev']));
 
         $this->assertSame(Status::SUCCESS, $payload->getStatus());
+        $this->assertSame(7, $resets->added[0]['userId']);
+        $this->assertSame(['s@x.dev' => 'Sarah'], $mailer->sent[0]['to']);
     }
 
     /**
@@ -58,34 +64,15 @@ final class ForgotPasswordTest extends AbstractUnitTestCase
      */
     public function testUnknownEmailGivesTheSameAnswer(): void
     {
-        $users = $this->createMock(UserRepository::class);
-        $users->method('findByEmail')->willReturn(null);
+        $resets = new FakeResetPasswordRepository();
+        $mailer = new FakeMailer();
 
-        $resets = $this->createMock(ResetPasswordRepository::class);
-        $resets->expects($this->never())->method('add');
-
-        $mailer = $this->createMock(Mailer::class);
-        $mailer->expects($this->never())->method('send');
-
-        $payload = $this->domain($users, $resets, $mailer)(new Input(['email' => 'ghost@x.dev']));
+        $payload = (new ForgotPassword(new FakeUserRepository(), $resets, $mailer))(
+            new Input(['email' => 'ghost@x.dev'])
+        );
 
         $this->assertSame(Status::SUCCESS, $payload->getStatus());
-    }
-
-    private function domain(
-        ?UserRepository $users = null,
-        ?ResetPasswordRepository $resets = null,
-        ?Mailer $mailer = null
-    ): ForgotPassword {
-        return new ForgotPassword(
-            $users ?? $this->createMock(UserRepository::class),
-            $resets ?? $this->createMock(ResetPasswordRepository::class),
-            $mailer ?? $this->createMock(Mailer::class)
-        );
-    }
-
-    private function user(): User
-    {
-        return new User(1, 'Sarah', 's@x.dev', 'h', 2, 'Users', true, false, false, false);
+        $this->assertSame([], $resets->added);
+        $this->assertSame([], $mailer->sent);
     }
 }

@@ -17,11 +17,11 @@ use Phalcon\ADR\Input\Input;
 use Phalcon\ADR\Payload\Status;
 use Phalcon\Encryption\Security;
 use Phalcon\Talon\PHPUnit\AbstractUnitTestCase;
-use Vokuro\Contracts\Repository\FailedLoginRepository;
-use Vokuro\Contracts\Repository\SuccessLoginRepository;
-use Vokuro\Contracts\Repository\UserRepository;
 use Vokuro\Domain\Model\User;
 use Vokuro\Domain\Session\Login;
+use Vokuro\Tests\Support\Fake\FakeFailedLoginRepository;
+use Vokuro\Tests\Support\Fake\FakeSuccessLoginRepository;
+use Vokuro\Tests\Support\Fake\FakeUserRepository;
 
 final class LoginTest extends AbstractUnitTestCase
 {
@@ -48,8 +48,8 @@ final class LoginTest extends AbstractUnitTestCase
      */
     public function testThrottled(): void
     {
-        $failed = $this->createMock(FailedLoginRepository::class);
-        $failed->method('recentCount')->willReturn(5);
+        $failed         = new FakeFailedLoginRepository();
+        $failed->recent = 5;
 
         $payload = $this->login(failed: $failed)(
             new Input(['email' => 'x@x.dev', 'password' => 'secret', 'ipAddress' => 'ip'])
@@ -63,18 +63,16 @@ final class LoginTest extends AbstractUnitTestCase
      */
     public function testWrongPassword(): void
     {
-        $users = $this->createMock(UserRepository::class);
-        $users->method('findByEmail')->willReturn($this->user('secret'));
+        $users = (new FakeUserRepository())->seed($this->user('secret'));
 
-        $failed = $this->createMock(FailedLoginRepository::class);
-        $failed->method('recentCount')->willReturn(0);
-        $failed->expects($this->once())->method('add')->with(7, 'ip');
+        $failed = new FakeFailedLoginRepository();
 
         $payload = $this->login($users, failed: $failed)(
             new Input(['email' => 'x@x.dev', 'password' => 'wrong', 'ipAddress' => 'ip'])
         );
 
         $this->assertSame(Status::NOT_AUTHENTICATED, $payload->getStatus());
+        $this->assertSame(['userId' => 7, 'ipAddress' => 'ip'], $failed->added[0]);
     }
 
     /**
@@ -82,18 +80,14 @@ final class LoginTest extends AbstractUnitTestCase
      */
     public function testUnknownEmail(): void
     {
-        $users = $this->createMock(UserRepository::class);
-        $users->method('findByEmail')->willReturn(null);
+        $failed = new FakeFailedLoginRepository();
 
-        $failed = $this->createMock(FailedLoginRepository::class);
-        $failed->method('recentCount')->willReturn(0);
-        $failed->expects($this->once())->method('add')->with(null, 'ip');
-
-        $payload = $this->login($users, failed: $failed)(
+        $payload = $this->login(new FakeUserRepository(), failed: $failed)(
             new Input(['email' => 'x@x.dev', 'password' => 'secret', 'ipAddress' => 'ip'])
         );
 
         $this->assertSame(Status::NOT_AUTHENTICATED, $payload->getStatus());
+        $this->assertSame(['userId' => null, 'ipAddress' => 'ip'], $failed->added[0]);
     }
 
     /**
@@ -101,8 +95,7 @@ final class LoginTest extends AbstractUnitTestCase
      */
     public function testInactive(): void
     {
-        $users = $this->createMock(UserRepository::class);
-        $users->method('findByEmail')->willReturn($this->user('secret', active: false));
+        $users = (new FakeUserRepository())->seed($this->user('secret', active: false));
 
         $payload = $this->login($users)(
             new Input(['email' => 'x@x.dev', 'password' => 'secret', 'ipAddress' => 'ip'])
@@ -116,8 +109,7 @@ final class LoginTest extends AbstractUnitTestCase
      */
     public function testBanned(): void
     {
-        $users = $this->createMock(UserRepository::class);
-        $users->method('findByEmail')->willReturn($this->user('secret', banned: true));
+        $users = (new FakeUserRepository())->seed($this->user('secret', banned: true));
 
         $payload = $this->login($users)(
             new Input(['email' => 'x@x.dev', 'password' => 'secret', 'ipAddress' => 'ip'])
@@ -131,17 +123,15 @@ final class LoginTest extends AbstractUnitTestCase
      */
     public function testSuccess(): void
     {
-        $users = $this->createMock(UserRepository::class);
-        $users->method('findByEmail')->willReturn($this->user('secret'));
-
-        $success = $this->createMock(SuccessLoginRepository::class);
-        $success->expects($this->once())->method('add')->with(7, 'ip', 'agent');
+        $users   = (new FakeUserRepository())->seed($this->user('secret'));
+        $success = new FakeSuccessLoginRepository();
 
         $payload = $this->login($users, $success)(
             new Input(['email' => 'x@x.dev', 'password' => 'secret', 'ipAddress' => 'ip', 'userAgent' => 'agent'])
         );
 
         $this->assertSame(Status::AUTHENTICATED, $payload->getStatus());
+        $this->assertSame(['userId' => 7, 'ipAddress' => 'ip', 'userAgent' => 'agent'], $success->added[0]);
         $this->assertSame(
             ['id' => 7, 'name' => 'Sarah', 'email' => 'x@x.dev', 'profilesId' => 2],
             $payload->getResult()
@@ -149,16 +139,14 @@ final class LoginTest extends AbstractUnitTestCase
     }
 
     private function login(
-        ?UserRepository $users = null,
-        ?SuccessLoginRepository $success = null,
-        ?FailedLoginRepository $failed = null
+        ?FakeUserRepository $users = null,
+        ?FakeSuccessLoginRepository $success = null,
+        ?FakeFailedLoginRepository $failed = null
     ): Login {
-        $failed ??= $this->createMock(FailedLoginRepository::class);
-
         return new Login(
-            $users ?? $this->createMock(UserRepository::class),
-            $success ?? $this->createMock(SuccessLoginRepository::class),
-            $failed,
+            $users ?? new FakeUserRepository(),
+            $success ?? new FakeSuccessLoginRepository(),
+            $failed ?? new FakeFailedLoginRepository(),
             $this->security
         );
     }

@@ -17,11 +17,11 @@ use Phalcon\ADR\Input\Input;
 use Phalcon\ADR\Payload\Status;
 use Phalcon\Encryption\Security;
 use Phalcon\Talon\PHPUnit\AbstractUnitTestCase;
-use Vokuro\Contracts\Mailer;
-use Vokuro\Contracts\Repository\EmailConfirmationRepository;
-use Vokuro\Contracts\Repository\UserRepository;
 use Vokuro\Domain\Model\User;
 use Vokuro\Domain\Session\SignUp;
+use Vokuro\Tests\Support\Fake\FakeEmailConfirmationRepository;
+use Vokuro\Tests\Support\Fake\FakeMailer;
+use Vokuro\Tests\Support\Fake\FakeUserRepository;
 
 final class SignUpTest extends AbstractUnitTestCase
 {
@@ -30,22 +30,17 @@ final class SignUpTest extends AbstractUnitTestCase
      */
     public function testCreatesConfirmationAndMails(): void
     {
-        $users = $this->createMock(UserRepository::class);
-        $users->method('findByEmail')->willReturn(null);
-        $users->expects($this->once())->method('add')->willReturn(42);
+        $users         = new FakeUserRepository();
+        $confirmations = new FakeEmailConfirmationRepository();
+        $mailer        = new FakeMailer();
 
-        $confirmations = $this->createMock(EmailConfirmationRepository::class);
-        $confirmations->expects($this->once())->method('add')->willReturn('code');
-
-        $mailer = $this->createMock(Mailer::class);
-        $mailer->expects($this->once())->method('send');
-
-        $payload = (new SignUp($users, $confirmations, new Security(), $mailer))(
-            $this->input()
-        );
+        $payload = (new SignUp($users, $confirmations, new Security(), $mailer))($this->input());
 
         $this->assertSame(Status::CREATED, $payload->getStatus());
-        $this->assertSame(['id' => 42, 'email' => 'kyle@resistance.dev'], $payload->getResult());
+        $this->assertSame(['id' => 1, 'email' => 'kyle@resistance.dev'], $payload->getResult());
+        $this->assertSame('N', $users->added[1]['active']);
+        $this->assertCount(1, $confirmations->added);
+        $this->assertSame(['kyle@resistance.dev' => 'Kyle Reese'], $mailer->sent[0]['to']);
     }
 
     /**
@@ -57,19 +52,22 @@ final class SignUpTest extends AbstractUnitTestCase
      */
     public function testValidation(array $overrides, string $field, bool $duplicate = false): void
     {
-        $users = $this->createMock(UserRepository::class);
-        $users->method('findByEmail')->willReturn($duplicate ? $this->user() : null);
-        $users->expects($this->never())->method('add');
+        $users = new FakeUserRepository();
+
+        if (true === $duplicate) {
+            $users->seed(new User(1, 'x', 'kyle@resistance.dev', 'h', 2, 'Users', true, false, false, false));
+        }
 
         $payload = (new SignUp(
             $users,
-            $this->createMock(EmailConfirmationRepository::class),
+            new FakeEmailConfirmationRepository(),
             new Security(),
-            $this->createMock(Mailer::class)
+            new FakeMailer()
         ))($this->input($overrides));
 
         $this->assertSame(Status::NOT_VALID, $payload->getStatus());
         $this->assertArrayHasKey($field, (array) $payload->getMessages());
+        $this->assertSame([], $users->added);
     }
 
     /**
@@ -78,13 +76,13 @@ final class SignUpTest extends AbstractUnitTestCase
     public static function invalidProvider(): array
     {
         return [
-            'empty name'        => [['name' => ''], 'name'],
-            'empty email'       => [['email' => ''], 'email'],
-            'invalid email'     => [['email' => 'nope'], 'email'],
-            'duplicate email'   => [[], 'email', true],
-            'empty password'    => [['password' => '', 'confirmPassword' => ''], 'password'],
-            'short password'    => [['password' => 'short', 'confirmPassword' => 'short'], 'password'],
-            'mismatch password' => [['confirmPassword' => 'different'], 'confirmPassword'],
+            'empty name'         => [['name' => ''], 'name'],
+            'empty email'        => [['email' => ''], 'email'],
+            'invalid email'      => [['email' => 'nope'], 'email'],
+            'duplicate email'    => [[], 'email', true],
+            'empty password'     => [['password' => '', 'confirmPassword' => ''], 'password'],
+            'short password'     => [['password' => 'short', 'confirmPassword' => 'short'], 'password'],
+            'mismatch password'  => [['confirmPassword' => 'different'], 'confirmPassword'],
             'terms not accepted' => [['terms' => ''], 'terms'],
         ];
     }
@@ -101,10 +99,5 @@ final class SignUpTest extends AbstractUnitTestCase
             'confirmPassword' => 'abcdefgh',
             'terms'           => 'yes',
         ]);
-    }
-
-    private function user(): User
-    {
-        return new User(1, 'x', 'x@x.dev', 'h', 2, 'Users', true, false, false, false);
     }
 }

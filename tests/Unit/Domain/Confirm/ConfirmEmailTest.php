@@ -16,11 +16,11 @@ namespace Vokuro\Tests\Unit\Domain\Confirm;
 use Phalcon\ADR\Input\Input;
 use Phalcon\ADR\Payload\Status;
 use Phalcon\Talon\PHPUnit\AbstractUnitTestCase;
-use Vokuro\Contracts\Repository\EmailConfirmationRepository;
-use Vokuro\Contracts\Repository\UserRepository;
 use Vokuro\Domain\Confirm\ConfirmEmail;
 use Vokuro\Domain\Model\EmailConfirmation;
 use Vokuro\Domain\Model\User;
+use Vokuro\Tests\Support\Fake\FakeEmailConfirmationRepository;
+use Vokuro\Tests\Support\Fake\FakeUserRepository;
 
 final class ConfirmEmailTest extends AbstractUnitTestCase
 {
@@ -29,10 +29,9 @@ final class ConfirmEmailTest extends AbstractUnitTestCase
      */
     public function testUnknownCode(): void
     {
-        $confirmations = $this->createMock(EmailConfirmationRepository::class);
-        $confirmations->method('findByCode')->willReturn(null);
-
-        $payload = $this->domain($confirmations)(new Input(['code' => 'nope']));
+        $payload = (new ConfirmEmail(new FakeEmailConfirmationRepository(), new FakeUserRepository()))(
+            new Input(['code' => 'nope'])
+        );
 
         $this->assertSame(Status::NOT_FOUND, $payload->getStatus());
     }
@@ -42,12 +41,13 @@ final class ConfirmEmailTest extends AbstractUnitTestCase
      */
     public function testAlreadyConfirmed(): void
     {
-        $confirmations = $this->createMock(EmailConfirmationRepository::class);
-        $confirmations->method('findByCode')->willReturn(new EmailConfirmation(1, 7, true));
+        $confirmations = new FakeEmailConfirmationRepository();
+        $confirmations->seed('used', new EmailConfirmation(1, 7, true));
 
-        $payload = $this->domain($confirmations)(new Input(['code' => 'used']));
+        $payload = (new ConfirmEmail($confirmations, new FakeUserRepository()))(new Input(['code' => 'used']));
 
         $this->assertSame(Status::NOT_VALID, $payload->getStatus());
+        $this->assertSame([], $confirmations->confirmed);
     }
 
     /**
@@ -55,13 +55,10 @@ final class ConfirmEmailTest extends AbstractUnitTestCase
      */
     public function testUserGone(): void
     {
-        $confirmations = $this->createMock(EmailConfirmationRepository::class);
-        $confirmations->method('findByCode')->willReturn(new EmailConfirmation(1, 7, false));
+        $confirmations = new FakeEmailConfirmationRepository();
+        $confirmations->seed('code', new EmailConfirmation(1, 7, false));
 
-        $users = $this->createMock(UserRepository::class);
-        $users->method('findById')->willReturn(null);
-
-        $payload = $this->domain($confirmations, $users)(new Input(['code' => 'code']));
+        $payload = (new ConfirmEmail($confirmations, new FakeUserRepository()))(new Input(['code' => 'code']));
 
         $this->assertSame(Status::NOT_FOUND, $payload->getStatus());
     }
@@ -71,32 +68,20 @@ final class ConfirmEmailTest extends AbstractUnitTestCase
      */
     public function testConfirms(): void
     {
-        $confirmations = $this->createMock(EmailConfirmationRepository::class);
-        $confirmations->method('findByCode')->willReturn(new EmailConfirmation(3, 7, false));
-        $confirmations->expects($this->once())->method('markConfirmed')->with(3);
+        $confirmations = new FakeEmailConfirmationRepository();
+        $confirmations->seed('code', new EmailConfirmation(3, 7, false));
 
-        $users = $this->createMock(UserRepository::class);
-        $users->method('findById')->willReturn(
-            new User(7, 'Kyle', 'kyle@x.dev', 'h', 2, 'Users', false, false, false, true)
-        );
-        $users->expects($this->once())->method('update')->with(7, ['active' => 'Y']);
+        $users = new FakeUserRepository();
+        $users->seed(new User(7, 'Kyle', 'kyle@x.dev', 'h', 2, 'Users', false, false, false, true));
 
-        $payload = $this->domain($confirmations, $users)(new Input(['code' => 'code']));
+        $payload = (new ConfirmEmail($confirmations, $users))(new Input(['code' => 'code']));
 
         $this->assertSame(Status::UPDATED, $payload->getStatus());
+        $this->assertSame(['active' => 'Y'], $users->updated[7]);
+        $this->assertSame([3], $confirmations->confirmed);
         $this->assertSame(
             ['id' => 7, 'name' => 'Kyle', 'email' => 'kyle@x.dev', 'profilesId' => 2, 'mustChangePassword' => true],
             $payload->getResult()
-        );
-    }
-
-    private function domain(
-        ?EmailConfirmationRepository $confirmations = null,
-        ?UserRepository $users = null
-    ): ConfirmEmail {
-        return new ConfirmEmail(
-            $confirmations ?? $this->createMock(EmailConfirmationRepository::class),
-            $users ?? $this->createMock(UserRepository::class)
         );
     }
 }

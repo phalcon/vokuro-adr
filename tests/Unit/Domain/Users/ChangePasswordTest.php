@@ -17,10 +17,10 @@ use Phalcon\ADR\Input\Input;
 use Phalcon\ADR\Payload\Status;
 use Phalcon\Encryption\Security;
 use Phalcon\Talon\PHPUnit\AbstractUnitTestCase;
-use Vokuro\Contracts\Repository\PasswordChangeRepository;
-use Vokuro\Contracts\Repository\UserRepository;
 use Vokuro\Domain\Model\User;
 use Vokuro\Domain\Users\ChangePassword;
+use Vokuro\Tests\Support\Fake\FakePasswordChangeRepository;
+use Vokuro\Tests\Support\Fake\FakeUserRepository;
 
 final class ChangePasswordTest extends AbstractUnitTestCase
 {
@@ -33,10 +33,17 @@ final class ChangePasswordTest extends AbstractUnitTestCase
      */
     public function testValidation(array $input, string $field): void
     {
-        $payload = $this->domain()(new Input($input + ['userId' => 1]));
+        $users   = new FakeUserRepository();
+        $changes = new FakePasswordChangeRepository();
+
+        $payload = (new ChangePassword($users, $changes, new Security()))(
+            new Input($input + ['userId' => 1])
+        );
 
         $this->assertSame(Status::NOT_VALID, $payload->getStatus());
         $this->assertArrayHasKey($field, (array) $payload->getMessages());
+        $this->assertSame([], $users->updated);
+        $this->assertSame([], $changes->added);
     }
 
     /**
@@ -56,10 +63,9 @@ final class ChangePasswordTest extends AbstractUnitTestCase
      */
     public function testNotFound(): void
     {
-        $users = $this->createMock(UserRepository::class);
-        $users->method('findById')->willReturn(null);
+        $users = new FakeUserRepository();
 
-        $payload = $this->domain($users)(
+        $payload = (new ChangePassword($users, new FakePasswordChangeRepository(), new Security()))(
             new Input(['userId' => 1, 'password' => 'abcdefgh', 'confirmPassword' => 'abcdefgh'])
         );
 
@@ -71,17 +77,12 @@ final class ChangePasswordTest extends AbstractUnitTestCase
      */
     public function testChangesAndRecords(): void
     {
-        $users = $this->createMock(UserRepository::class);
-        $users->method('findById')->willReturn(
-            new User(1, 'Sarah', 's@x.dev', 'h', 2, 'Users', true, false, false, true)
-        );
-        $users->expects($this->once())->method('update')
-              ->with(1, $this->callback(fn(array $f): bool => 'N' === $f['mustChangePassword']));
+        $users = new FakeUserRepository();
+        $users->seed(new User(1, 'Sarah', 's@x.dev', 'h', 2, 'Users', true, false, false, true));
 
-        $changes = $this->createMock(PasswordChangeRepository::class);
-        $changes->expects($this->once())->method('add')->with(1, 'ip', 'agent');
+        $changes = new FakePasswordChangeRepository();
 
-        $payload = $this->domain($users, $changes)(new Input([
+        $payload = (new ChangePassword($users, $changes, new Security()))(new Input([
             'userId'          => 1,
             'password'        => 'newpassword1',
             'confirmPassword' => 'newpassword1',
@@ -90,16 +91,7 @@ final class ChangePasswordTest extends AbstractUnitTestCase
         ]));
 
         $this->assertSame(Status::UPDATED, $payload->getStatus());
-    }
-
-    private function domain(
-        ?UserRepository $users = null,
-        ?PasswordChangeRepository $changes = null
-    ): ChangePassword {
-        return new ChangePassword(
-            $users ?? $this->createMock(UserRepository::class),
-            $changes ?? $this->createMock(PasswordChangeRepository::class),
-            new Security()
-        );
+        $this->assertSame('N', $users->updated[1]['mustChangePassword']);
+        $this->assertSame(['userId' => 1, 'ipAddress' => 'ip', 'userAgent' => 'agent'], $changes->added[0]);
     }
 }

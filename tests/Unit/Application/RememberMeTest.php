@@ -15,10 +15,10 @@ namespace Vokuro\Tests\Unit\Application;
 
 use Phalcon\Talon\PHPUnit\AbstractUnitTestCase;
 use Vokuro\Application\RememberMe;
-use Vokuro\Contracts\Cookies;
-use Vokuro\Contracts\Repository\RememberTokenRepository;
-use Vokuro\Contracts\Repository\UserRepository;
 use Vokuro\Domain\Model\User;
+use Vokuro\Tests\Support\Fake\FakeCookies;
+use Vokuro\Tests\Support\Fake\FakeRememberTokenRepository;
+use Vokuro\Tests\Support\Fake\FakeUserRepository;
 
 final class RememberMeTest extends AbstractUnitTestCase
 {
@@ -27,15 +27,16 @@ final class RememberMeTest extends AbstractUnitTestCase
      */
     public function testRememberStoresHashedTokenAndCookies(): void
     {
-        $tokens = $this->createMock(RememberTokenRepository::class);
-        $tokens->expects($this->once())->method('add')
-               ->with(7, $this->isType('string'), 'agent');
+        $tokens  = new FakeRememberTokenRepository();
+        $cookies = new FakeCookies();
 
-        $cookies = $this->createMock(Cookies::class);
-        $cookies->expects($this->exactly(2))->method('set');
+        (new RememberMe($tokens, new FakeUserRepository(), $cookies))->remember(7, 'agent');
 
-        (new RememberMe($tokens, $this->createMock(UserRepository::class), $cookies))
-            ->remember(7, 'agent');
+        $this->assertSame(7, $tokens->added[0]['userId']);
+        $this->assertSame('agent', $tokens->added[0]['userAgent']);
+        $this->assertSame(64, strlen($tokens->added[0]['tokenHash']));
+        $this->assertArrayHasKey('RMU', $cookies->jar);
+        $this->assertArrayHasKey('RMT', $cookies->jar);
     }
 
     /**
@@ -45,13 +46,10 @@ final class RememberMeTest extends AbstractUnitTestCase
     {
         $raw = 'raw-token';
 
-        $tokens = $this->createMock(RememberTokenRepository::class);
-        $tokens->method('findUserByToken')->with(hash('sha256', $raw))->willReturn(7);
+        $tokens = (new FakeRememberTokenRepository())->seed(hash('sha256', $raw), 7);
+        $users  = (new FakeUserRepository())->seed($this->user());
 
-        $users = $this->createMock(UserRepository::class);
-        $users->method('findById')->with(7)->willReturn($this->user());
-
-        $auth = (new RememberMe($tokens, $users, $this->cookies((string) 7, $raw)))->recall();
+        $auth = (new RememberMe($tokens, $users, $this->cookies('7', $raw)))->recall();
 
         $this->assertSame(
             ['id' => 7, 'name' => 'Sarah', 'email' => 's@x.dev', 'profilesId' => 2],
@@ -64,29 +62,22 @@ final class RememberMeTest extends AbstractUnitTestCase
      */
     public function testRecallRejectsBadCookies(): void
     {
-        $users = $this->createMock(UserRepository::class);
-
         // no cookies at all
-        $none = new RememberMe($this->createMock(RememberTokenRepository::class), $users, $this->cookies(null, null));
+        $none = new RememberMe(new FakeRememberTokenRepository(), new FakeUserRepository(), new FakeCookies());
         $this->assertNull($none->recall());
 
         // token unknown to the store
-        $tokens = $this->createMock(RememberTokenRepository::class);
-        $tokens->method('findUserByToken')->willReturn(null);
-        $unknown = new RememberMe($tokens, $users, $this->cookies('7', 'raw'));
+        $unknown = new RememberMe(new FakeRememberTokenRepository(), new FakeUserRepository(), $this->cookies('7', 'raw'));
         $this->assertNull($unknown->recall());
 
         // token belongs to a different user than the RMU cookie
-        $other = $this->createMock(RememberTokenRepository::class);
-        $other->method('findUserByToken')->willReturn(9);
-        $mismatch = new RememberMe($other, $users, $this->cookies('7', 'raw'));
+        $other    = (new FakeRememberTokenRepository())->seed(hash('sha256', 'raw'), 9);
+        $mismatch = new RememberMe($other, new FakeUserRepository(), $this->cookies('7', 'raw'));
         $this->assertNull($mismatch->recall());
 
         // token maps to a user who no longer exists
-        $orphan = $this->createMock(RememberTokenRepository::class);
-        $orphan->method('findUserByToken')->willReturn(7);
-        $users->method('findById')->willReturn(null);
-        $gone = new RememberMe($orphan, $users, $this->cookies('7', 'raw'));
+        $orphan = (new FakeRememberTokenRepository())->seed(hash('sha256', 'raw'), 7);
+        $gone   = new RememberMe($orphan, new FakeUserRepository(), $this->cookies('7', 'raw'));
         $this->assertNull($gone->recall());
     }
 
@@ -95,24 +86,19 @@ final class RememberMeTest extends AbstractUnitTestCase
      */
     public function testForget(): void
     {
-        $tokens = $this->createMock(RememberTokenRepository::class);
-        $tokens->expects($this->once())->method('deleteForUser')->with(7);
+        $tokens  = (new FakeRememberTokenRepository())->seed(hash('sha256', 'raw'), 7);
+        $cookies = (new FakeCookies())->seed('RMU', '7')->seed('RMT', 'raw');
 
-        $cookies = $this->createMock(Cookies::class);
-        $cookies->expects($this->exactly(2))->method('delete');
+        (new RememberMe($tokens, new FakeUserRepository(), $cookies))->forget(7);
 
-        (new RememberMe($tokens, $this->createMock(UserRepository::class), $cookies))->forget(7);
+        $this->assertSame([7], $tokens->deleted);
+        $this->assertContains('RMU', $cookies->deleted);
+        $this->assertContains('RMT', $cookies->deleted);
     }
 
-    private function cookies(?string $user, ?string $token): Cookies
+    private function cookies(string $user, string $token): FakeCookies
     {
-        $cookies = $this->createMock(Cookies::class);
-        $cookies->method('get')->willReturnMap([
-            ['RMU', $user],
-            ['RMT', $token],
-        ]);
-
-        return $cookies;
+        return (new FakeCookies())->seed('RMU', $user)->seed('RMT', $token);
     }
 
     private function user(): User
