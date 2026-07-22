@@ -74,8 +74,10 @@ jobs:
           - '8.4'
           - '8.5'
         variant:
-          # v5 = cphalcon C extension; v6 = phalcon/phalcon composer package
-          - 'v5'
+          # v5 = cphalcon C extension; v6 = phalcon/phalcon composer package.
+          # v5 is disabled until a cphalcon 5.x release ships the ADR stack;
+          # the released extension has no ADR classes, so the app cannot run.
+          # - 'v5'
           - 'v6'
     services:
       mysql:
@@ -175,13 +177,9 @@ jobs:
           coverage: pcov
           tools: composer:v2
 
-      # pecl's phalcon release metadata caps at PHP 8.4; PIE builds it from source.
-      - name: "Install Phalcon (v5) via PIE"
-        run: |
-          curl -fsSL https://github.com/php/pie/releases/latest/download/pie.phar -o pie.phar
-          sudo "$(which php)" pie.phar install --no-interaction "phalcon/cphalcon:${{ env.PHALCON_CONSTRAINT }}"
-          php -m | grep -i phalcon
-
+      # Coverage runs on v6 (the phalcon/phalcon composer package). The v5 C
+      # extension is not installed: its released build has no ADR stack, so the
+      # app cannot run under it until a cphalcon 5.x release ships ADR.
       - name: "Install dependencies"
         uses: ramsey/composer-install@26d8a556604053a9612623447203a691f406fbe6 # v4
         with:
