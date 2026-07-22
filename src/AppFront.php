@@ -37,6 +37,7 @@ use Phalcon\Mvc\View\Simple;
 use Phalcon\Session\Adapter\Stream;
 use Phalcon\Session\Manager as SessionManager;
 use Phalcon\Session\ManagerInterface;
+use Symfony\Component\Mailer\Transport\Smtp\EsmtpTransport;
 use Vokuro\Application\Authorizer;
 use Vokuro\Application\RememberMe;
 use Vokuro\Contracts\Authorization;
@@ -237,15 +238,19 @@ final class AppFront extends AbstractHttpFront
         $container->set(
             MailerInterface::class,
             function ($container) {
+                $transport = new EsmtpTransport(
+                    $this->env('MAIL_SMTP_SERVER', 'mailpit'),
+                    (int) ($this->env('MAIL_SMTP_PORT', 1025))
+                );
+                $transport->setUsername($this->env('MAIL_SMTP_USERNAME', ''));
+                $transport->setPassword($this->env('MAIL_SMTP_PASSWORD', ''));
+
                 return new Mailer(
                     $this->newRenderer($container, 'layouts/emailTemplates'),
                     $this->env('MAIL_FROM_EMAIL', 'mail@vokuro.phalcon.io'),
                     $this->env('MAIL_FROM_NAME', 'Vokuro'),
                     $this->env('APP_PUBLIC_URL', 'localhost'),
-                    $this->env('MAIL_SMTP_SERVER', 'mailpit'),
-                    (int) ($this->env('MAIL_SMTP_PORT', 1025)),
-                    $this->env('MAIL_SMTP_USERNAME', ''),
-                    $this->env('MAIL_SMTP_PASSWORD', '')
+                    $transport
                 );
             }
         );

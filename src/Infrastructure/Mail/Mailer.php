@@ -15,7 +15,7 @@ namespace Vokuro\Infrastructure\Mail;
 
 use Phalcon\Contracts\View\Renderer;
 use Symfony\Component\Mailer\Mailer as SymfonyMailer;
-use Symfony\Component\Mailer\Transport\Smtp\EsmtpTransport;
+use Symfony\Component\Mailer\Transport\TransportInterface;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
 use Vokuro\Contracts\Mailer as MailerInterface;
@@ -33,10 +33,7 @@ final class Mailer implements MailerInterface
         private string $fromEmail,
         private string $fromName,
         private string $publicUrl,
-        private string $server,
-        private int $port,
-        private string $username = '',
-        private string $password = ''
+        private TransportInterface $transport
     ) {
     }
 
@@ -61,11 +58,7 @@ final class Mailer implements MailerInterface
             )
         );
 
-        $transport = new EsmtpTransport($this->server, $this->port);
-        $transport->setUsername($this->username);
-        $transport->setPassword($this->password);
-
-        (new SymfonyMailer($transport))->send($message);
+        (new SymfonyMailer($this->transport))->send($message);
 
         return count($to);
     }
