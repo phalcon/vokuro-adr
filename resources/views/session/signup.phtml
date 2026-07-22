@@ -1,0 +1,78 @@
+<?php
+
+/**
+ * @var array                         $messages field => message
+ * @var \Phalcon\Encryption\Security  $security
+ * @var \Phalcon\Html\TagFactory      $tag
+ * @var \Phalcon\Mvc\Url\UrlInterface $url
+ * @var string                        $status
+ */
+
+use Phalcon\ADR\Payload\Status;
+use Vokuro\Forms\SignUpForm;
+
+$form     = new SignUpForm();
+$errors   = (array) $messages;
+$created  = Status::CREATED === $status;
+$form->setTagFactory($tag);
+
+/**
+ * A created account reports one plain message; anything else reports one per
+ * field, shown under the input it belongs to.
+ */
+$error = static function (string $field) use ($errors, $created): string {
+    if ($created || !isset($errors[$field])) {
+        return '';
+    }
+
+    return '<div class="field-error">' . $errors[$field] . '</div>';
+};
+?>
+<h1>Sign Up</h1>
+<p>Create your account to get started.</p>
+
+<?php if ($created) { ?>
+    <?php foreach ($errors as $message) { ?>
+        <div class="alert"><?= $message ?></div>
+    <?php } ?>
+<?php } ?>
+
+<form method="post">
+    <div class="field">
+        <?= $form->label('name') ?>
+        <?= $form->render('name', ['class' => 'input', 'placeholder' => 'Name']) ?>
+        <?= $error('name') ?>
+    </div>
+
+    <div class="field">
+        <?= $form->label('email') ?>
+        <?= $form->render('email', ['class' => 'input', 'placeholder' => 'Email']) ?>
+        <?= $error('email') ?>
+    </div>
+
+    <div class="field">
+        <?= $form->label('password') ?>
+        <?= $form->render('password', ['class' => 'input', 'placeholder' => 'Password']) ?>
+        <?= $error('password') ?>
+    </div>
+
+    <div class="field">
+        <?= $form->label('confirmPassword') ?>
+        <?= $form->render('confirmPassword', ['class' => 'input', 'placeholder' => 'Confirm Password']) ?>
+        <?= $error('confirmPassword') ?>
+    </div>
+
+    <div class="check">
+        <?= $form->render('terms') ?>
+        <?= $form->label('terms') ?>
+    </div>
+    <?= $error('terms') ?>
+
+    <?= $tag->inputHidden('csrf', $security->getToken()) ?>
+    <?= $error('csrf') ?>
+
+    <?= $form->render('Sign Up', ['class' => 'btn']) ?>
+</form>
+
+<hr>
+<?= $tag->aRaw($url->get('session/login'), '&larr; Back to Login') ?>

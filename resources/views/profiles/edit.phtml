@@ -1,0 +1,84 @@
+<?php
+
+/**
+ * @var array                         $messages field => message
+ * @var array                         $result   profile + users
+ * @var \Phalcon\Encryption\Security  $security
+ * @var \Phalcon\Html\TagFactory      $tag
+ * @var \Phalcon\Mvc\Url\UrlInterface $url
+ */
+
+use Vokuro\Domain\Model\Profile;
+use Vokuro\Forms\ProfileForm;
+
+/** @var Profile $profile */
+$profile = $result['profile'];
+$errors  = (array) $messages;
+$form    = new ProfileForm();
+$form->setTagFactory($tag);
+
+$error = static fn(string $field): string => isset($errors[$field])
+    ? '<div class="field-error">' . $errors[$field] . '</div>'
+    : '';
+
+$yesNo = static fn(bool $on): string => $on ? 'Yes' : 'No';
+
+$activeSelect = $tag->inputSelect('', '', ['name' => 'active', 'class' => 'select'])
+    ->selected($profile->active ? 'Y' : 'N')
+    ->add('Yes', 'Y')
+    ->add('No', 'N');
+?>
+<div class="page-head">
+    <h1>Edit profile</h1>
+</div>
+
+<div class="actions">
+    <?= $tag->aRaw($url->get('profiles'), '&larr; Go Back', ['class' => 'btn-ghost btn']) ?>
+</div>
+
+<form method="post">
+    <div class="card">
+        <h3>Basic</h3>
+        <div class="field">
+            <label>Name</label>
+            <?= $form->render('name', ['class' => 'input', 'placeholder' => 'Name', 'value' => $profile->name]) ?>
+            <?= $error('name') ?>
+        </div>
+        <div class="field">
+            <label>Active?</label>
+            <?= $activeSelect ?>
+        </div>
+
+        <?= $tag->inputHidden('csrf', $security->getToken()) ?>
+        <?= $tag->inputSubmit('save', 'Save', ['class' => 'btn']) ?>
+    </div>
+</form>
+
+<?php if (isset($result['users'])) { ?>
+    <div class="card">
+        <h3>Users</h3>
+        <div class="data-table table-scroll">
+            <table>
+                <thead>
+                <tr><th>Id</th><th>Name</th><th>Banned?</th><th>Suspended?</th><th>Active?</th><th></th><th></th></tr>
+                </thead>
+                <tbody>
+                <?php foreach ($result['users'] as $user) { ?>
+                    <tr>
+                        <td class="id"><?= $user->id ?></td>
+                        <td class="name"><?= $user->name ?></td>
+                        <td><?= $yesNo($user->banned) ?></td>
+                        <td><?= $yesNo($user->suspended) ?></td>
+                        <td><?= $yesNo($user->active) ?></td>
+                        <td><?= $tag->a($url->get('users/edit/' . $user->id), 'Edit', ['class' => 'btn-sm btn-ghost btn']) ?></td>
+                        <td><?= $tag->a($url->get('users/delete/' . $user->id), 'Delete', ['class' => 'btn-sm btn-danger btn']) ?></td>
+                    </tr>
+                <?php } ?>
+                <?php if ($result['users']->isEmpty()) { ?>
+                    <tr><td colspan="7">There are no users assigned to this profile</td></tr>
+                <?php } ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+<?php } ?>

@@ -1,0 +1,77 @@
+<?php
+
+/**
+ * @var \Phalcon\Html\TagFactory      $tag
+ * @var \Phalcon\Mvc\Url\UrlInterface $url
+ * @var \Vokuro\Domain\Meta|null      $extras
+ * @var string                        $section
+ */
+
+$rail = static function (string $to, string $svg, string $label, string $current) use ($tag, $url): string {
+    $icon = $svg . '<span class="lbl">' . $label . '</span>';
+
+    return $tag->aRaw(
+        $url->get($to),
+        $icon,
+        ['class' => ($to === $current ? 'is-active' : '')]
+    );
+};
+
+$icons = [
+    'users'       => '<svg class="ico" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="6" r="3"></circle><path d="M3.5 15c0-3 2.5-5 5.5-5s5.5 2 5.5 5"></path></svg>',
+    'profiles'    => '<svg class="ico" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4" width="13" height="10" rx="2"></rect><circle cx="6.3" cy="9" r="1.6"></circle><path d="M10 7.8h3.4M10 10.4h2.8"></path></svg>',
+    'permissions' => '<svg class="ico" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2.4l5.2 2v3.8c0 3.3-2.3 5.6-5.2 6.6-2.9-1-5.2-3.3-5.2-6.6V4.4z"></path><path d="M6.8 8.8l1.5 1.5 3-3.2"></path></svg>',
+];
+?>
+<!DOCTYPE html>
+<html lang="en" class="h-100">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Vökuró</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+    <link rel="stylesheet" href="/css/style.css" media="screen,projection">
+</head>
+<body>
+    <div class="app">
+        <aside class="rail">
+            <?= $tag->aRaw(
+                $url->get(''),
+                $tag->img('/img/phalcon.svg', ['alt' => '']) . '<span class="lbl">Vökuró</span>',
+                ['class' => 'brand']
+            ) ?>
+            <button class="rail-toggle" data-nav-toggle type="button" aria-label="Menu">&#9776;</button>
+            <div class="rail-section">Manage</div>
+            <nav class="rail-nav">
+                <?= $rail('users', $icons['users'], 'Users', $section) ?>
+                <?= $rail('profiles', $icons['profiles'], 'Profiles', $section) ?>
+                <?= $rail('permissions', $icons['permissions'], 'Permissions', $section) ?>
+            </nav>
+            <div class="rail-user">
+                <span class="avatar"><?= $tag->img('/img/phalcon.svg', ['alt' => '']) ?></span>
+                <div class="who">
+                    <?= $extras?->name ?? '' ?><br>
+                    <?= $tag->a($url->get('users/changePassword'), 'Change password') ?> &middot; <?= $tag->a($url->get('session/logout'), 'Logout') ?>
+                </div>
+            </div>
+        </aside>
+
+        <section class="content">
+            <div class="content-head">
+                <div class="crumb">
+                    <button class="rail-collapse" data-rail-collapse type="button" aria-label="Toggle sidebar">&#9776;</button>
+                    Manage / <b><?= ucfirst($section) ?></b>
+                </div>
+            </div>
+            <div class="content-body">
+                <?= $this->getContent() ?>
+            </div>
+        </section>
+    </div>
+
+    <script src="/js/app.js"></script>
+</body>
+</html>

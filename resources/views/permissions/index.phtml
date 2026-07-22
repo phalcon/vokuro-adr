@@ -1,0 +1,68 @@
+<?php
+
+/**
+ * @var array                         $messages
+ * @var array                         $result   profiles, resources, acl, profile, granted
+ * @var \Phalcon\Encryption\Security  $security
+ * @var \Phalcon\Html\TagFactory      $tag
+ * @var \Phalcon\Mvc\Url\UrlInterface $url
+ */
+
+use Vokuro\Application\Acl;
+use Vokuro\Infrastructure\View\ProfileSelectData;
+
+/** @var Acl $acl */
+$acl     = $result['acl'];
+$profile = $result['profile'];
+$granted = $result['granted'];
+
+$profileSelect = $tag->inputSelect('', '', ['name' => 'profileId', 'class' => 'select'])
+    ->selected(null === $profile ? '' : (string) $profile)
+    ->addPlaceholder('...', '')
+    ->fromData(new ProfileSelectData($result['profiles']));
+?>
+<div class="page-head">
+    <h1>Manage Permissions</h1>
+</div>
+
+<?php foreach ((array) $messages as $message) { ?>
+    <div class="alert"><?= $message ?></div>
+<?php } ?>
+
+<div class="card">
+    <form method="post">
+        <?= $tag->inputHidden('csrf', $security->getToken()) ?>
+
+        <div class="field">
+            <label for="profileId">Profile</label>
+            <?= $profileSelect ?>
+        </div>
+
+        <?= $tag->inputSubmit('search', 'Search', ['class' => 'btn']) ?>
+
+        <?php if (null !== $profile) { ?>
+            <hr>
+            <?php foreach ($result['resources'] as $resource => $actions) { ?>
+                <h3><?= $resource ?></h3>
+                <div class="data-table table-scroll">
+                    <table>
+                        <thead><tr><th></th><th>Description</th></tr></thead>
+                        <tbody>
+                        <?php foreach ($actions as $action) { ?>
+                            <?php $pair = $resource . '.' . $action; ?>
+                            <tr>
+                                <td>
+                                    <input type="checkbox" name="permissions[]" value="<?= $pair ?>"<?= isset($granted[$pair]) ? ' checked="checked"' : '' ?>>
+                                </td>
+                                <td><?= $acl->actionDescription($action) . ' ' . $resource ?></td>
+                            </tr>
+                        <?php } ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php } ?>
+
+            <?= $tag->inputSubmit('submit', 'Submit', ['class' => 'btn']) ?>
+        <?php } ?>
+    </form>
+</div>

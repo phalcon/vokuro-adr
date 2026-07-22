@@ -1,0 +1,73 @@
+<?php
+
+/**
+ * @var \Phalcon\Html\TagFactory     $tag
+ * @var \Phalcon\Mvc\Url\UrlInterface $url
+ * @var \Vokuro\Domain\Meta|null     $extras
+ * @var string                       $section
+ */
+
+/**
+ * The path and the section are the same word for every entry but the home
+ * page, which lives at the root and is named `index` by the menus.
+ */
+$menus = [
+    'Home'  => ['path' => '', 'section' => 'index'],
+    'About' => ['path' => 'about', 'section' => 'about'],
+];
+?>
+<!DOCTYPE html>
+<html lang="en" class="h-100">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Vökuró</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+    <link rel="stylesheet" href="/css/style.css" media="screen,projection">
+</head>
+<body>
+    <div class="topbar">
+        <div class="inner">
+            <?= $tag->aRaw(
+                $url->get(''),
+                $tag->img('/img/phalcon.svg', ['alt' => '']) . ' Vökuró',
+                ['class' => 'brand']
+            ) ?>
+            <button class="nav-toggle" data-nav-toggle type="button" aria-label="Menu">&#9776;</button>
+            <nav>
+                <?php foreach ($menus as $label => $menu) { ?>
+                    <?= $tag->a($url->get($menu['path']), $label, [
+                        'class' => ($menu['section'] === $section ? 'is-active' : ''),
+                    ]) ?>
+                <?php } ?>
+
+                <?php if ($extras?->isLoggedIn ?? false) { ?>
+                    <?= $tag->a($url->get('users'), 'Users') ?>
+                    <?= $tag->a($url->get('profiles'), 'Profiles') ?>
+                    <?= $tag->a($url->get('permissions'), 'Permissions') ?>
+                    <?= $tag->a($url->get('session/logout'), 'Logout', ['class' => 'btn btn-sm']) ?>
+                <?php } else { ?>
+                    <?= $tag->a($url->get('session/login'), 'Login') ?>
+                    <?= $tag->a($url->get('session/signup'), 'Sign up', ['class' => 'btn btn-sm']) ?>
+                <?php } ?>
+            </nav>
+        </div>
+    </div>
+
+    <main class="container">
+        <?= $this->getContent() ?>
+    </main>
+
+    <footer class="footer">
+        Made with love by the Phalcon Team &middot;
+        <?= $tag->a($url->get('privacy'), 'Privacy Policy') ?> &middot;
+        <?= $tag->a($url->get('terms'), 'Terms') ?> &middot;
+        &copy; <?= date('Y') ?> Phalcon Team.
+    </footer>
+
+    <script src="/js/app.js"></script>
+</body>
+</html>

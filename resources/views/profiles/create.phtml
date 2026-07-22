@@ -1,0 +1,51 @@
+<?php
+
+/**
+ * @var array                         $messages field => message
+ * @var \Phalcon\Encryption\Security  $security
+ * @var \Phalcon\Html\TagFactory      $tag
+ * @var \Phalcon\Mvc\Url\UrlInterface $url
+ */
+
+use Vokuro\Forms\ProfileForm;
+
+$form   = new ProfileForm();
+$errors = (array) $messages;
+$form->setTagFactory($tag);
+
+$error = static fn(string $field): string => isset($errors[$field])
+    ? '<div class="field-error">' . $errors[$field] . '</div>'
+    : '';
+
+$activeSelect = $tag->inputSelect('', '', ['name' => 'active', 'class' => 'select'])
+    ->selected('Y')
+    ->add('Yes', 'Y')
+    ->add('No', 'N');
+?>
+<div class="page-head">
+    <h1>Create a Profile</h1>
+</div>
+
+<div class="actions">
+    <?= $tag->aRaw($url->get('profiles'), '&larr; Go Back', ['class' => 'btn-ghost btn']) ?>
+</div>
+
+<div class="card">
+    <form method="post">
+        <div class="field">
+            <label for="name">Name</label>
+            <?= $form->render('name', ['class' => 'input', 'placeholder' => 'Name']) ?>
+            <?= $error('name') ?>
+        </div>
+
+        <div class="field">
+            <label for="active">Active?</label>
+            <?= $activeSelect ?>
+        </div>
+
+        <?= $tag->inputHidden('csrf', $security->getToken()) ?>
+        <?= $error('csrf') ?>
+
+        <?= $tag->inputSubmit('save', 'Save', ['class' => 'btn']) ?>
+    </form>
+</div>

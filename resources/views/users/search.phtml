@@ -1,0 +1,61 @@
+<?php
+
+/**
+ * @var array                         $result page + query
+ * @var \Phalcon\Html\TagFactory      $tag
+ * @var \Phalcon\Mvc\Url\UrlInterface $url
+ */
+
+use Vokuro\Domain\Page;
+
+/** @var Page $page */
+$page  = $result['page'];
+$query = '' === $result['query'] ? '' : '&' . $result['query'];
+
+$pill = static fn(bool $on, string $yes, string $no): string => $on
+    ? '<span class="pill pill-warn">' . $yes . '</span>'
+    : '<span class="pill pill-ok">' . $no . '</span>';
+?>
+<div class="page-head">
+    <h1>Found users</h1>
+</div>
+
+<div class="actions">
+    <?= $tag->aRaw($url->get('users'), '&larr; Go Back', ['class' => 'btn-ghost btn']) ?>
+    <?= $tag->a($url->get('users/create'), 'Create users', ['class' => 'btn']) ?>
+</div>
+
+<div class="data-table table-scroll">
+    <table>
+        <thead>
+        <tr>
+            <th>Id</th><th>Name</th><th>Email</th><th>Profile</th>
+            <th>Banned?</th><th>Suspended?</th><th>Confirmed?</th><th></th><th></th>
+        </tr>
+        </thead>
+        <tbody>
+        <?php foreach ($page->items as $user) { ?>
+            <tr>
+                <td class="id"><?= $user->id ?></td>
+                <td class="name"><?= $user->name ?></td>
+                <td><?= $user->email ?></td>
+                <td><?= $user->profileName ?></td>
+                <td><?= $pill($user->banned, 'Yes', 'No') ?></td>
+                <td><?= $pill($user->suspended, 'Yes', 'No') ?></td>
+                <td><?= $pill(!$user->active, 'No', 'Yes') ?></td>
+                <td><?= $tag->a($url->get('users/edit/' . $user->id), 'Edit', ['class' => 'btn-sm btn-ghost btn']) ?></td>
+                <td><?= $tag->a($url->get('users/delete/' . $user->id), 'Delete', ['class' => 'btn-sm btn-danger btn']) ?></td>
+            </tr>
+        <?php } ?>
+        <?php if ($page->items->isEmpty()) { ?>
+            <tr><td colspan="9">No users are recorded</td></tr>
+        <?php } ?>
+        </tbody>
+    </table>
+</div>
+
+<div class="actions">
+    <?= $tag->a($url->get('users/search?page=' . $page->previous() . $query), 'Previous', ['class' => 'btn-sm btn-ghost btn']) ?>
+    <span class="btn-sm btn-ghost btn"><?= $page->current ?> / <?= $page->last ?></span>
+    <?= $tag->a($url->get('users/search?page=' . $page->next() . $query), 'Next', ['class' => 'btn-sm btn-ghost btn']) ?>
+</div>

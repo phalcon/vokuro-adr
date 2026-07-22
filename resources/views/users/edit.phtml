@@ -1,0 +1,123 @@
+<?php
+
+/**
+ * @var array                         $messages field => message
+ * @var array                         $result   user + profiles
+ * @var \Phalcon\Encryption\Security  $security
+ * @var \Phalcon\Html\TagFactory      $tag
+ * @var \Phalcon\Mvc\Url\UrlInterface $url
+ */
+
+use Vokuro\Domain\Model\User;
+use Vokuro\Forms\UserForm;
+use Vokuro\Infrastructure\View\ProfileSelectData;
+
+/** @var User $user */
+$user   = $result['user'];
+$errors = (array) $messages;
+$form   = new UserForm();
+$form->setTagFactory($tag);
+
+$error = static fn(string $field): string => isset($errors[$field])
+    ? '<div class="field-error">' . $errors[$field] . '</div>'
+    : '';
+
+$yesNo = static function (string $name, bool $on) use ($tag): string {
+    return (string) $tag->inputSelect('', '', ['name' => $name, 'class' => 'select'])
+        ->selected($on ? 'Y' : 'N')
+        ->add('Yes', 'Y')
+        ->add('No', 'N');
+};
+
+$profileSelect = $tag->inputSelect('', '', ['name' => 'profilesId', 'class' => 'select'])
+    ->selected((string) $user->profileId)
+    ->addPlaceholder('...', '')
+    ->fromData(new ProfileSelectData($result['profiles']));
+?>
+<div class="page-head">
+    <h1>Edit users</h1>
+</div>
+
+<div class="actions">
+    <?= $tag->aRaw($url->get('users'), '&larr; Go Back', ['class' => 'btn-ghost btn']) ?>
+</div>
+
+<form method="post">
+    <div class="card">
+        <h3>Basic</h3>
+        <div class="field">
+            <label>Name</label>
+            <?= $form->render('name', ['class' => 'input', 'placeholder' => 'Name', 'value' => $user->name]) ?>
+            <?= $error('name') ?>
+        </div>
+        <div class="field">
+            <label>Profile</label>
+            <?= $profileSelect ?>
+            <?= $error('profilesId') ?>
+        </div>
+        <div class="field">
+            <label>E-Mail</label>
+            <?= $form->render('email', ['class' => 'input', 'value' => $user->email]) ?>
+            <?= $error('email') ?>
+        </div>
+        <div class="field"><label>Suspended?</label><?= $yesNo('suspended', $user->suspended) ?></div>
+        <div class="field"><label>Banned?</label><?= $yesNo('banned', $user->banned) ?></div>
+        <div class="field"><label>Confirmed?</label><?= $yesNo('active', $user->active) ?></div>
+
+        <?= $tag->inputHidden('csrf', $security->getToken()) ?>
+        <?= $tag->inputSubmit('save', 'Save', ['class' => 'btn']) ?>
+    </div>
+</form>
+
+<?php if (isset($result['logins'])) { ?>
+    <div class="card">
+        <h3>Successful Logins</h3>
+        <div class="data-table table-scroll">
+            <table>
+                <thead><tr><th>Id</th><th>IP Address</th><th>User Agent</th></tr></thead>
+                <tbody>
+                <?php foreach ($result['logins'] as $login) { ?>
+                    <tr><td class="id"><?= $login->id ?></td><td><?= $login->ipAddress ?></td><td><?= $login->userAgent ?></td></tr>
+                <?php } ?>
+                <?php if ($result['logins']->isEmpty()) { ?>
+                    <tr><td colspan="3">User does not have successful logins</td></tr>
+                <?php } ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Password Changes</h3>
+        <div class="data-table table-scroll">
+            <table>
+                <thead><tr><th>Id</th><th>IP Address</th><th>User Agent</th><th>Date</th></tr></thead>
+                <tbody>
+                <?php foreach ($result['passwordChanges'] as $change) { ?>
+                    <tr><td class="id"><?= $change->id ?></td><td><?= $change->ipAddress ?></td><td><?= $change->userAgent ?></td><td><?= date('Y-m-d H:i:s', $change->createdAt) ?></td></tr>
+                <?php } ?>
+                <?php if ($result['passwordChanges']->isEmpty()) { ?>
+                    <tr><td colspan="4">User has not changed his/her password</td></tr>
+                <?php } ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Reset Passwords</h3>
+        <div class="data-table table-scroll">
+            <table>
+                <thead><tr><th>Id</th><th>Date</th><th>Reset?</th></tr></thead>
+                <tbody>
+                <?php foreach ($result['resets'] as $reset) { ?>
+                    <tr><td class="id"><?= $reset->id ?></td><td><?= date('Y-m-d H:i:s', $reset->createdAt) ?></td><td><?= $reset->reset ? 'Yes' : 'No' ?></td></tr>
+                <?php } ?>
+                <?php if ($result['resets']->isEmpty()) { ?>
+                    <tr><td colspan="3">User has not requested reset his/her password</td></tr>
+                <?php } ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+<?php } ?>

@@ -1,0 +1,21 @@
+<?php
+
+/**
+ * The error responder puts the message and the correlation reference in the
+ * result, and the trace as well when the environment is a development one.
+ *
+ * @var array  $result
+ * @var string $status
+ */
+?>
+<div class="page-head">
+    <h1><?= $result['message'] ?? 'Something went wrong' ?></h1>
+</div>
+
+<div class="card">
+    <p>Reference <code><?= $result['ref'] ?? '' ?></code></p>
+
+    <?php if (isset($result['trace'])) { ?>
+        <pre style="overflow-x:auto"><?= htmlspecialchars($result['trace']) ?></pre>
+    <?php } ?>
+</div>

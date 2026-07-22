@@ -1,0 +1,59 @@
+<?php
+
+/**
+ * @var array                         $messages field => message
+ * @var array                         $result   profiles
+ * @var \Phalcon\Encryption\Security  $security
+ * @var \Phalcon\Html\TagFactory      $tag
+ * @var \Phalcon\Mvc\Url\UrlInterface $url
+ */
+
+use Vokuro\Forms\UserForm;
+use Vokuro\Infrastructure\View\ProfileSelectData;
+
+$form   = new UserForm();
+$errors = (array) $messages;
+$form->setTagFactory($tag);
+
+$error = static fn(string $field): string => isset($errors[$field])
+    ? '<div class="field-error">' . $errors[$field] . '</div>'
+    : '';
+
+$profileSelect = $tag->inputSelect('', '', ['name' => 'profilesId', 'class' => 'select'])
+    ->addPlaceholder('...', '')
+    ->fromData(new ProfileSelectData($result['profiles']));
+?>
+<div class="page-head">
+    <h1>Create a User</h1>
+</div>
+
+<div class="actions">
+    <?= $tag->aRaw($url->get('users'), '&larr; Go Back', ['class' => 'btn-ghost btn']) ?>
+</div>
+
+<div class="card">
+    <form method="post">
+        <div class="field">
+            <label for="name">Name</label>
+            <?= $form->render('name', ['class' => 'input', 'placeholder' => 'Name']) ?>
+            <?= $error('name') ?>
+        </div>
+
+        <div class="field">
+            <label for="email">E-Mail</label>
+            <?= $form->render('email', ['class' => 'input', 'placeholder' => 'E-Mail']) ?>
+            <?= $error('email') ?>
+        </div>
+
+        <div class="field">
+            <label for="profilesId">Profile</label>
+            <?= $profileSelect ?>
+            <?= $error('profilesId') ?>
+        </div>
+
+        <?= $tag->inputHidden('csrf', $security->getToken()) ?>
+        <?= $error('csrf') ?>
+
+        <?= $tag->inputSubmit('save', 'Save', ['class' => 'btn']) ?>
+    </form>
+</div>

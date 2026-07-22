@@ -1,0 +1,53 @@
+<?php
+
+/**
+ * @var array                         $messages
+ * @var \Phalcon\Encryption\Security  $security
+ * @var \Phalcon\Html\TagFactory      $tag
+ * @var \Phalcon\Mvc\Url\UrlInterface $url
+ */
+
+use Vokuro\Forms\LoginForm;
+
+$form = new LoginForm();
+$form->setTagFactory($tag);
+?>
+<h1>Log In</h1>
+<p>Welcome back. Enter your details.</p>
+
+<?php foreach ((array) $messages as $message) { ?>
+    <div class="alert"><?= $message ?></div>
+<?php } ?>
+
+<form method="post">
+    <div class="field">
+        <label for="email-input">Email address</label>
+        <?= $form->render('email', [
+            'class'       => 'input',
+            'id'          => 'email-input',
+            'placeholder' => 'you@phalcon.io',
+        ]) ?>
+    </div>
+
+    <div class="field">
+        <label for="password-input">Password</label>
+        <?= $form->render('password', [
+            'class'       => 'input',
+            'id'          => 'password-input',
+            'placeholder' => 'Password',
+        ]) ?>
+    </div>
+
+    <div class="check">
+        <?= $form->render('remember', ['class' => 'check-input']) ?>
+        <?= $form->label('remember') ?>
+    </div>
+
+    <?= $tag->inputHidden('csrf', $security->getToken()) ?>
+
+    <?= $form->render('Login', ['class' => 'btn']) ?>
+</form>
+
+<hr>
+<p><?= $tag->a($url->get('session/forgotPassword'), 'Forgot my password') ?></p>
+<p><?= $tag->a($url->get('session/signup'), 'Sign up') ?></p>

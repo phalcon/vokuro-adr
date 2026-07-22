@@ -1,0 +1,67 @@
+<?php
+
+/**
+ * @var array                         $result page
+ * @var \Phalcon\Html\TagFactory      $tag
+ * @var \Phalcon\Mvc\Url\UrlInterface $url
+ */
+
+use Vokuro\Domain\Page;
+use Vokuro\Forms\ProfileSearchForm;
+
+/** @var Page $page */
+$page = $result['page'];
+$form = new ProfileSearchForm();
+$form->setTagFactory($tag);
+
+$pill = static fn(bool $on): string => $on
+    ? '<span class="pill pill-ok">Yes</span>'
+    : '<span class="pill pill-warn">No</span>';
+?>
+<div class="page-head">
+    <h1>Profiles</h1>
+    <p>Group permissions into reusable profiles.</p>
+</div>
+
+<div class="actions">
+    <?= $tag->a($url->get('profiles/create'), 'Create Profiles', ['class' => 'btn']) ?>
+</div>
+
+<div class="card">
+    <h3>Search profiles</h3>
+    <form method="get" action="<?= $url->get('profiles/search') ?>">
+        <div class="toolbar">
+            <?= $form->render('id', ['class' => 'input', 'placeholder' => 'Id']) ?>
+            <?= $form->render('name', ['class' => 'input', 'placeholder' => 'Name']) ?>
+            <?= $tag->button('Search', ['type' => 'submit', 'class' => 'btn']) ?>
+        </div>
+    </form>
+</div>
+
+<div class="data-table table-scroll">
+    <table>
+        <thead>
+        <tr><th>Id</th><th>Name</th><th>Active?</th><th></th><th></th></tr>
+        </thead>
+        <tbody>
+        <?php foreach ($page->items as $profile) { ?>
+            <tr>
+                <td class="id"><?= $profile->id ?></td>
+                <td class="name"><?= $profile->name ?></td>
+                <td><?= $pill($profile->active) ?></td>
+                <td><?= $tag->a($url->get('profiles/edit/' . $profile->id), 'Edit', ['class' => 'btn-sm btn-ghost btn']) ?></td>
+                <td><?= $tag->a($url->get('profiles/delete/' . $profile->id), 'Delete', ['class' => 'btn-sm btn-danger btn']) ?></td>
+            </tr>
+        <?php } ?>
+        <?php if ($page->items->isEmpty()) { ?>
+            <tr><td colspan="5">No profiles are recorded</td></tr>
+        <?php } ?>
+        </tbody>
+    </table>
+</div>
+
+<div class="actions">
+    <?= $tag->a($url->get('profiles?page=' . $page->previous()), 'Previous', ['class' => 'btn-sm btn-ghost btn']) ?>
+    <span class="btn-sm btn-ghost btn"><?= $page->current ?> / <?= $page->last ?></span>
+    <?= $tag->a($url->get('profiles?page=' . $page->next()), 'Next', ['class' => 'btn-sm btn-ghost btn']) ?>
+</div>
