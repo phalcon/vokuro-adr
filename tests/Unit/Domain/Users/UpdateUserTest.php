@@ -77,6 +77,43 @@ final class UpdateUserTest extends AbstractUnitTestCase
         $this->assertSame('N', $users->updated[1]['active']);
     }
 
+    /**
+     * Unit Tests Vokuro\Domain\Users\UpdateUser :: keys each invalid field
+     *
+     * @dataProvider invalidProvider
+     *
+     * @param array<string, mixed> $overrides
+     */
+    public function testValidation(array $overrides, string $field): void
+    {
+        $users = new FakeUserRepository();
+        $users->seed($this->user(1, 's@x.dev'));
+
+        $payload = (new UpdateUser($users))(new Input($overrides + [
+            'id'         => 1,
+            'name'       => 'Sarah',
+            'email'      => 's@x.dev',
+            'profilesId' => 2,
+        ]));
+
+        $this->assertSame(Status::NOT_VALID, $payload->getStatus());
+        $this->assertArrayHasKey($field, (array) $payload->getMessages());
+        $this->assertSame([], $users->updated);
+    }
+
+    /**
+     * @return array<string, array{0: array<string, mixed>, 1: string}>
+     */
+    public static function invalidProvider(): array
+    {
+        return [
+            'empty name'    => [['name' => ''], 'name'],
+            'empty email'   => [['email' => ''], 'email'],
+            'invalid email' => [['email' => 'bad'], 'email'],
+            'no profile'    => [['profilesId' => 0], 'profilesId'],
+        ];
+    }
+
     private function user(int $id, string $email): User
     {
         return new User($id, 'Sarah', $email, 'h', 2, 'Users', true, false, false, false);
