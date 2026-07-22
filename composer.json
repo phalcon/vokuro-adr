@@ -26,6 +26,7 @@
         "phalcon/talon": "^0.8",
         "phalcon/volt": "1.0.x-dev",
         "phpstan/phpstan": "^2.2",
+        "phpunit/phpcov": "^9.0",
         "phpunit/phpunit": "^10.5",
         "squizlabs/php_codesniffer": "^4.0"
     },
@@ -52,9 +53,9 @@
         "cs-fix": "phpcbf --standard=resources/phpcs.xml",
         "cs-fixer": "php-cs-fixer fix --config=resources/php-cs-fixer.php --dry-run --diff",
         "cs-fixer-fix": "php-cs-fixer fix --config=resources/php-cs-fixer.php",
-        "test": "talon run",
-        "test-coverage": "talon run unit -- --coverage-clover tests/_output/coverage.xml",
-        "test-coverage-html": "talon run unit -- --coverage-html tests/_output/coverage",
+        "test-unit": "talon run unit",
+        "test-unit-coverage": "talon run unit -- --coverage-clover tests/_output/coverage.xml --coverage-php tests/_output/coverage-unit.cov",
+        "test-unit-coverage-html": "talon run unit -- --coverage-html tests/_output/coverage/",
         "migrate": "phinx migrate -c resources/phinx.php",
         "seed": "phinx seed:run -c resources/phinx.php",
         "post-create-project-cmd": [
