@@ -75,7 +75,7 @@ use Vokuro\Responder\PrivateResponder;
  * The entry point of the application. It loads the environment, registers the
  * ADR seams and everything this application adds on top of them.
  */
-final class AppFront extends AbstractHttpFront
+class AppFront extends AbstractHttpFront
 {
     protected function loadEnvironment(Container $container): void
     {
