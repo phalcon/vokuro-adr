@@ -26,8 +26,8 @@ use Vokuro\Domain\Page;
  */
 final class ProfileRepository implements ProfileRepositoryInterface
 {
-    private const ID_FIELD = 'id = ';
     private const COLUMNS = ['id', 'name', 'active'];
+    private const ID_FIELD = 'id = ';
 
     public function __construct(
         private Connection $connection,

@@ -53,9 +53,10 @@ final class PostUsersEdit implements Action
 
         if (false === $this->security->checkToken('csrf', $request->getPost('csrf'))) {
             return $this->form(
-                $request, $id, 
+                $request,
+                $id,
                 Payload::invalid(['csrf' => 'The form has expired, please try again'])
-                );
+            );
         }
 
         $input   = new Input(
