@@ -56,6 +56,28 @@
         "test-unit": "talon run unit",
         "test-unit-coverage": "talon run unit -- --coverage-clover tests/_output/coverage.xml --coverage-php tests/_output/coverage-unit.cov",
         "test-unit-coverage-html": "talon run unit -- --coverage-html tests/_output/coverage/",
+        "db-create-integration": "@php resources/scripts/create-integration-db.php",
+        "db-migrate-integration": "DB_NAME=vokuro_adr_test phinx migrate -c resources/phinx.php",
+        "test-integration": [
+            "@db-create-integration",
+            "@db-migrate-integration",
+            "talon run integration"
+        ],
+        "test-integration-coverage": [
+            "@db-create-integration",
+            "@db-migrate-integration",
+            "talon run integration -- --coverage-clover tests/_output/coverage.xml --coverage-php tests/_output/coverage-integration.cov"
+        ],
+        "test-all": [
+            "@db-create-integration",
+            "@db-migrate-integration",
+            "talon run all"
+        ],
+        "test-all-coverage": [
+            "@test-unit-coverage",
+            "@test-integration-coverage",
+            "phpcov merge --clover tests/_output/coverage.xml tests/_output/"
+        ],
         "migrate": "phinx migrate -c resources/phinx.php",
         "seed": "phinx seed:run -c resources/phinx.php",
         "post-create-project-cmd": [
