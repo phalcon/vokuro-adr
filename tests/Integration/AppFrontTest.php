@@ -102,6 +102,22 @@ final class AppFrontTest extends AbstractUnitTestCase
     }
 
     /**
+     * Integration Tests Vokuro\AppFront :: a provider reads getenv when it is set
+     */
+    public function testEnvReadsFromGetenv(): void
+    {
+        // Force getenv() to answer, so env() takes the getenv branch. In CI the
+        // dotenv load only populates $_ENV, so nothing else exercises it.
+        putenv('APP_BASE_URI=/');
+
+        $container = (new TestableAppFront(dirname(__DIR__, 2)))->boot();
+
+        $this->assertNotNull($container->get(UrlInterface::class));
+
+        putenv('APP_BASE_URI');
+    }
+
+    /**
      * The services AppFront registers. Resolving each runs its provider closure.
      *
      * @return array<int, class-string>
