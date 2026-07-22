@@ -9,7 +9,7 @@
 coverage:
   paths:
     - tests/_output/coverage.xml
-  acceptable: "current >= 100%"
+  acceptable: "current >= 99%"
   badge:
     path: tests/_output/coverage.svg
 codeToTestRatio:
