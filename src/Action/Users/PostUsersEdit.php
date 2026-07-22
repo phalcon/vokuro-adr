@@ -35,6 +35,8 @@ use Vokuro\Responder\PrivateResponder;
  */
 final class PostUsersEdit implements Action
 {
+    private const ENDPOINT = '/users';
+
     public function __construct(
         private UpdateUser $domain,
         private UserRepository $users,
@@ -50,7 +52,10 @@ final class PostUsersEdit implements Action
         $id = (int) $request->getAttributes()->get(0);
 
         if (false === $this->security->checkToken('csrf', $request->getPost('csrf'))) {
-            return $this->form($request, $id, Payload::invalid(['csrf' => 'The form has expired, please try again']));
+            return $this->form(
+                $request, $id, 
+                Payload::invalid(['csrf' => 'The form has expired, please try again'])
+                );
         }
 
         $input   = new Input(
@@ -62,7 +67,7 @@ final class PostUsersEdit implements Action
             return ($this->redirect)(
                 $request,
                 new Response(),
-                Payload::found(new Redirect('/users'))
+                Payload::found(new Redirect(self::ENDPOINT))
             );
         }
 
@@ -70,7 +75,7 @@ final class PostUsersEdit implements Action
             return ($this->redirect)(
                 $request,
                 new Response(),
-                Payload::found(new Redirect('/users'))
+                Payload::found(new Redirect(self::ENDPOINT))
             );
         }
 
@@ -88,7 +93,7 @@ final class PostUsersEdit implements Action
             return ($this->redirect)(
                 $request,
                 new Response(),
-                Payload::found(new Redirect('/users'))
+                Payload::found(new Redirect(self::ENDPOINT))
             );
         }
 

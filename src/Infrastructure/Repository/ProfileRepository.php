@@ -26,6 +26,7 @@ use Vokuro\Domain\Page;
  */
 final class ProfileRepository implements ProfileRepositoryInterface
 {
+    private const ID_FIELD = 'id = ';
     private const COLUMNS = ['id', 'name', 'active'];
 
     public function __construct(
@@ -51,7 +52,7 @@ final class ProfileRepository implements ProfileRepositoryInterface
         $delete = $this->queryFactory->newDelete($this->connection);
         $delete
             ->from('profiles')
-            ->where('id = ', $id);
+            ->where(self::ID_FIELD, $id);
 
         $delete->perform();
     }
@@ -62,7 +63,7 @@ final class ProfileRepository implements ProfileRepositoryInterface
         $select
             ->from('profiles')
             ->columns(self::COLUMNS)
-            ->where('id = ', $id)
+            ->where(self::ID_FIELD, $id)
             ->limit(1);
 
         $row = $this->connection->fetchOne(
@@ -131,7 +132,7 @@ final class ProfileRepository implements ProfileRepositoryInterface
         $update
             ->from('profiles')
             ->columns($fields)
-            ->where('id = ', $id);
+            ->where(self::ID_FIELD, $id);
 
         $update->perform();
     }
@@ -156,7 +157,7 @@ final class ProfileRepository implements ProfileRepositoryInterface
         $where = [];
 
         if (!empty($filters['id'])) {
-            $where['id = '] = (int) $filters['id'];
+            $where[self::ID_FIELD] = (int) $filters['id'];
         }
 
         if (!empty($filters['name'])) {
