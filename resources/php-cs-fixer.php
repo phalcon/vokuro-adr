@@ -6,14 +6,9 @@ $finder = PhpCsFixer\Finder::create()
     ->in(
         [
             __DIR__ . '/../src',
-            __DIR__ . '/../config',
+            __DIR__ . '/../public',
             __DIR__ . '/migrations',
             __DIR__ . '/seeds',
-            __DIR__ . '/../public',
-            __DIR__ . '/../tests/Unit',
-            __DIR__ . '/../tests/Functional',
-            __DIR__ . '/../tests/Support',
-            __DIR__ . '/../tests/Browser',
         ]
     );
 
