@@ -94,7 +94,7 @@ CSRF sits behind the `Csrf` port (`token()` for views, `check(request)` for acti
 
 ## The composition root
 
-`src/AppFront.php` extends `Phalcon\ADR\Front\AbstractHttpFront`. It builds a `Phalcon\Container\Container`, loads the environment, and registers the providers (the services above, the session, logger, and renderers). Its `getApplication()` override builds the `Phalcon\ADR\Application`, sets the router's base namespace with `setBaseNamespace()`, and attaches the route guards with `secureWith()` — `RequireLogin` and `RequirePermission` on the `Users`, `Profiles`, and `Permissions` namespaces. The framework then matches the route, runs the middleware and action, and emits the response.
+`src/AppFront.php` extends `Phalcon\ADR\Front\AbstractHttpFront`. It builds a `Phalcon\Container\Container`, loads the environment, and registers the providers (the services above, the session, logger, and renderers). Its `getApplication()` override builds the `Phalcon\ADR\Application`, sets the router's base namespace with `setBaseNamespace()`, and attaches the route guards with `secureWith()` - `RequireLogin` and `RequirePermission` on the `Users`, `Profiles`, and `Permissions` namespaces. The framework then matches the route, runs the middleware and action, and emits the response.
 
 Two deliberate choices:
 
