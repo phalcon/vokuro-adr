@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Vokuro\Tests\Support;
 
 use Phalcon\Container\Container;
+use Phalcon\Contracts\ADR\Application as ApplicationInterface;
 use Vokuro\AppFront;
 
 /**
@@ -23,6 +24,11 @@ use Vokuro\AppFront;
  */
 final class TestableAppFront extends AppFront
 {
+    public function application(Container $container): ApplicationInterface
+    {
+        return $this->getApplication($container);
+    }
+
     public function boot(): Container
     {
         $container = $this->buildContainer();

@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Vokuro;
 
 use Dotenv\Dotenv;
+use Phalcon\ADR\Application;
 use Phalcon\ADR\Dispatcher;
 use Phalcon\ADR\ErrorResponder;
 use Phalcon\ADR\Front\AbstractHttpFront;
@@ -21,6 +22,7 @@ use Phalcon\ADR\Responder\JsonResponder;
 use Phalcon\ADR\Responder\StatusMapper;
 use Phalcon\ADR\Responder\ViewResponder;
 use Phalcon\Container\Container;
+use Phalcon\Contracts\ADR\Application as ApplicationInterface;
 use Phalcon\Contracts\ADR\Dispatcher as DispatcherContract;
 use Phalcon\Contracts\Events\Manager as EventsManagerContract;
 use Phalcon\Contracts\Http\AttributeRequest;
@@ -79,24 +81,33 @@ use Vokuro\Responder\PrivateResponder;
  */
 class AppFront extends AbstractHttpFront
 {
+    protected function getApplication(Container $container): ApplicationInterface
+    {
+        return (new Application($container))
+            ->setBaseNamespace('Vokuro\\Action')
+            ->secureWith(RequireLogin::class, '\\Users\\')
+            ->secureWith(RequirePermission::class, '\\Users\\')
+            ->secureWith(RequireLogin::class, '\\Profiles\\')
+            ->secureWith(RequirePermission::class, '\\Profiles\\')
+            ->secureWith(RequireLogin::class, '\\Permissions\\')
+            ->secureWith(RequirePermission::class, '\\Permissions\\');
+    }
+
     protected function loadEnvironment(Container $container): void
     {
         Dotenv::createUnsafeImmutable($this->projectRoot)->safeLoad();
     }
 
+    /**
+     * Registers this application's services on top of the ADR seams.
+     *
+     * The short aliases (`url`, `session`, `db`, `dispatcher`) are set purely
+     * as an example of `setAlias()`. Nothing resolves a service by those
+     * names - every dependency is autowired by its contract or class.
+     */
     protected function registerProviders(Container $container): void
     {
         parent::registerProviders($container);
-
-        $container->get('router')
-                  ->setBaseNamespace('Vokuro\\Action')
-                  ->setMiddlewareMap(
-                      [
-                        '\\Users\\'       => [RequireLogin::class, RequirePermission::class],
-                        '\\Profiles\\'    => [RequireLogin::class, RequirePermission::class],
-                        '\\Permissions\\' => [RequireLogin::class, RequirePermission::class],
-                      ]
-                  );
 
         /**
          * Templates build their links with it. Only the route name form of

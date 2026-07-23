@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Vokuro\Tests\Integration;
 
-use Phalcon\ADR\Application;
 use Phalcon\ADR\ErrorResponder;
 use Phalcon\Contracts\ADR\Dispatcher as DispatcherContract;
 use Phalcon\Contracts\Http\AttributeRequest;
@@ -77,9 +76,10 @@ final class AppFrontTest extends AbstractUnitTestCase
         $_SERVER['REQUEST_URI']    = '/';
         $_SERVER['REQUEST_METHOD'] = 'GET';
 
-        $container = (new TestableAppFront(dirname(__DIR__, 2)))->boot();
+        $front     = new TestableAppFront(dirname(__DIR__, 2));
+        $container = $front->boot();
 
-        $response = $container->get(Application::class)->handle(
+        $response = $front->application($container)->handle(
             $container->get(AttributeRequest::class)
         );
 
