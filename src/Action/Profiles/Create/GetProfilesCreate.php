@@ -11,40 +11,31 @@
 
 declare(strict_types=1);
 
-namespace Vokuro\Action\Profiles;
+namespace Vokuro\Action\Profiles\Create;
 
 use Phalcon\ADR\Payload\Payload;
-use Phalcon\ADR\Responder\Redirect;
-use Phalcon\ADR\Responder\RedirectResponder;
 use Phalcon\Contracts\ADR\Action;
 use Phalcon\Contracts\Http\AttributeRequest;
 use Phalcon\Http\Response;
 use Phalcon\Http\ResponseInterface;
-use Vokuro\Contracts\Repository\ProfileRepository;
+use Vokuro\Responder\PrivateResponder;
 
 /**
- * Removes a profile and returns to the list.
+ * Shows the form for a new profile.
  */
-final class GetProfilesDelete implements Action
+final class GetProfilesCreate implements Action
 {
     public function __construct(
-        private ProfileRepository $profiles,
-        private RedirectResponder $redirect
+        private PrivateResponder $responder
     ) {
     }
 
     public function __invoke(AttributeRequest $request): ResponseInterface
     {
-        $id = (int) $request->getAttributes()->get(0);
-
-        if (null !== $this->profiles->findById($id)) {
-            $this->profiles->delete($id);
-        }
-
-        return ($this->redirect)(
+        return ($this->responder->withTemplate('profiles/create'))(
             $request,
             new Response(),
-            Payload::found(new Redirect('/profiles'))
+            Payload::success()
         );
     }
 }

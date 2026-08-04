@@ -13,14 +13,14 @@ declare(strict_types=1);
 
 namespace Vokuro\Tests\Unit\Action\Users;
 
-use Vokuro\Action\Users\GetUsersSearch;
+use Vokuro\Action\Users\Search\GetUsersSearch;
 use Vokuro\Tests\Support\Fake\FakeUserRepository;
 use Vokuro\Tests\Unit\Action\AbstractActionTestCase;
 
 final class GetUsersSearchTest extends AbstractActionTestCase
 {
     /**
-     * Unit Tests Vokuro\Action\Users\GetUsersSearch :: renders the filtered results
+     * Unit Tests Vokuro\Action\Users\Search\GetUsersSearch :: renders the filtered results
      */
     public function testRendersResults(): void
     {

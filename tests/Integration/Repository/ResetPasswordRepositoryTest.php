@@ -42,6 +42,42 @@ final class ResetPasswordRepositoryTest extends AbstractIntegrationTestCase
     }
 
     /**
+     * Integration Tests Vokuro\Infrastructure\Repository\ResetPasswordRepository :: findByCode hydrates
+     */
+    public function testFindByCodeHydrates(): void
+    {
+        $this->seedCode(7, 'abc');
+
+        $reset = $this->repository->findByCode('abc');
+
+        $this->assertNotNull($reset);
+        $this->assertSame(7, $reset->usersId);
+        $this->assertSame(100, $reset->createdAt);
+        $this->assertFalse($reset->reset);
+    }
+
+    /**
+     * Integration Tests Vokuro\Infrastructure\Repository\ResetPasswordRepository :: findByCode misses as null
+     */
+    public function testFindByCodeMissingIsNull(): void
+    {
+        $this->assertNull($this->repository->findByCode('nope'));
+    }
+
+    /**
+     * Integration Tests Vokuro\Infrastructure\Repository\ResetPasswordRepository :: markReset spends the code
+     */
+    public function testMarkResetSpendsTheCode(): void
+    {
+        $id = $this->seedCode(7, 'abc');
+
+        $this->repository->markReset($id);
+
+        $row = $this->connection->fetchOne('SELECT reset FROM reset_passwords WHERE id = ' . $id);
+        $this->assertSame('Y', $row['reset']);
+    }
+
+    /**
      * Integration Tests Vokuro\Infrastructure\Repository\ResetPasswordRepository :: forUser returns the user's codes
      */
     public function testForUserReturnsCollection(): void

@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Vokuro\Tests\Unit\Action\Profiles;
 
-use Vokuro\Action\Profiles\PostProfilesEdit;
+use Vokuro\Action\Profiles\Edit\PostProfilesEdit;
 use Vokuro\Contracts\Csrf;
 use Vokuro\Domain\Model\Profile;
 use Vokuro\Domain\Profiles\UpdateProfile;
@@ -34,13 +34,13 @@ final class PostProfilesEditTest extends AbstractActionTestCase
     }
 
     /**
-     * Unit Tests Vokuro\Action\Profiles\PostProfilesEdit :: a valid submission updates and redirects
+     * Unit Tests Vokuro\Action\Profiles\Edit\PostProfilesEdit :: a valid submission updates and redirects
      */
     public function testUpdatesAndRedirects(): void
     {
         $this->seedProfile();
 
-        $response = $this->action(new FakeCsrf())($this->request(['name' => 'Managers', 'active' => 'N'], [], [0 => 3]));
+        $response = $this->action(new FakeCsrf())($this->request(['name' => 'Managers', 'active' => 'N'], [], ['id' => 3]));
 
         $this->assertSame(302, $response->getStatusCode());
         $this->assertSame('/profiles', $response->getHeaders()->get('Location'));
@@ -48,46 +48,46 @@ final class PostProfilesEditTest extends AbstractActionTestCase
     }
 
     /**
-     * Unit Tests Vokuro\Action\Profiles\PostProfilesEdit :: a missing profile redirects to the list
+     * Unit Tests Vokuro\Action\Profiles\Edit\PostProfilesEdit :: a missing profile redirects to the list
      */
     public function testNotFoundRedirects(): void
     {
-        $response = $this->action(new FakeCsrf())($this->request(['name' => 'Managers'], [], [0 => 999]));
+        $response = $this->action(new FakeCsrf())($this->request(['name' => 'Managers'], [], ['id' => 999]));
 
         $this->assertSame(302, $response->getStatusCode());
         $this->assertSame('/profiles', $response->getHeaders()->get('Location'));
     }
 
     /**
-     * Unit Tests Vokuro\Action\Profiles\PostProfilesEdit :: an invalid submission re-renders the form
+     * Unit Tests Vokuro\Action\Profiles\Edit\PostProfilesEdit :: an invalid submission re-renders the form
      */
     public function testInvalidRerendersForm(): void
     {
         $this->seedProfile();
 
-        $this->action(new FakeCsrf())($this->request(['name' => ''], [], [0 => 3]));
+        $this->action(new FakeCsrf())($this->request(['name' => ''], [], ['id' => 3]));
 
         $this->assertSame('profiles/edit', $this->renderer->calls[0]['path']);
     }
 
     /**
-     * Unit Tests Vokuro\Action\Profiles\PostProfilesEdit :: a bad CSRF token re-renders for a known profile
+     * Unit Tests Vokuro\Action\Profiles\Edit\PostProfilesEdit :: a bad CSRF token re-renders for a known profile
      */
     public function testBadCsrfRerendersForm(): void
     {
         $this->seedProfile();
 
-        $this->action(new FakeCsrf(valid: false))($this->request([], [], [0 => 3]));
+        $this->action(new FakeCsrf(valid: false))($this->request([], [], ['id' => 3]));
 
         $this->assertSame('profiles/edit', $this->renderer->calls[0]['path']);
     }
 
     /**
-     * Unit Tests Vokuro\Action\Profiles\PostProfilesEdit :: a bad CSRF token for a missing profile redirects
+     * Unit Tests Vokuro\Action\Profiles\Edit\PostProfilesEdit :: a bad CSRF token for a missing profile redirects
      */
     public function testBadCsrfMissingProfileRedirects(): void
     {
-        $response = $this->action(new FakeCsrf(valid: false))($this->request([], [], [0 => 999]));
+        $response = $this->action(new FakeCsrf(valid: false))($this->request([], [], ['id' => 999]));
 
         $this->assertSame(302, $response->getStatusCode());
         $this->assertSame('/profiles', $response->getHeaders()->get('Location'));

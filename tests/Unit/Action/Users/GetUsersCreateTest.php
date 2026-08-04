@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Vokuro\Tests\Unit\Action\Users;
 
-use Vokuro\Action\Users\GetUsersCreate;
+use Vokuro\Action\Users\Create\GetUsersCreate;
 use Vokuro\Domain\Model\Profile;
 use Vokuro\Tests\Support\Fake\FakeProfileRepository;
 use Vokuro\Tests\Unit\Action\AbstractActionTestCase;
@@ -21,7 +21,7 @@ use Vokuro\Tests\Unit\Action\AbstractActionTestCase;
 final class GetUsersCreateTest extends AbstractActionTestCase
 {
     /**
-     * Unit Tests Vokuro\Action\Users\GetUsersCreate :: renders the form with the profile options
+     * Unit Tests Vokuro\Action\Users\Create\GetUsersCreate :: renders the form with the profile options
      */
     public function testRendersFormWithProfiles(): void
     {

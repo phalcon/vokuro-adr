@@ -11,7 +11,7 @@
 
 declare(strict_types=1);
 
-namespace Vokuro\Action\Profiles;
+namespace Vokuro\Action\Profiles\Delete;
 
 use Phalcon\ADR\Payload\Payload;
 use Phalcon\ADR\Responder\Redirect;
@@ -21,41 +21,43 @@ use Phalcon\Contracts\Http\AttributeRequest;
 use Phalcon\Http\Response;
 use Phalcon\Http\ResponseInterface;
 use Vokuro\Contracts\Repository\ProfileRepository;
-use Vokuro\Contracts\Repository\UserRepository;
-use Vokuro\Responder\PrivateResponder;
 
 /**
- * Shows the edit form for a profile, with the users assigned to it.
+ * Removes a profile and returns to the list.
  */
-final class GetProfilesEdit implements Action
+final class GetProfilesDelete implements Action
 {
     public function __construct(
         private ProfileRepository $profiles,
-        private UserRepository $users,
-        private PrivateResponder $view,
         private RedirectResponder $redirect
     ) {
     }
 
     public function __invoke(AttributeRequest $request): ResponseInterface
     {
-        $profile = $this->profiles->findById((int) $request->getAttributes()->get(0));
+        $id = $request->getAttributes()->get('id', 0);
 
-        if (null === $profile) {
-            return ($this->redirect)(
-                $request,
-                new Response(),
-                Payload::found(new Redirect('/profiles'))
-            );
+        if (null !== $this->profiles->findById($id)) {
+            $this->profiles->delete($id);
         }
 
-        return ($this->view->withTemplate('profiles/edit'))(
+        return ($this->redirect)(
             $request,
             new Response(),
-            Payload::success([
-                'profile' => $profile,
-                'users'   => $this->users->byProfile($profile->id),
-            ])
+            Payload::found(new Redirect('/profiles'))
         );
+    }
+
+    /**
+     * The trailing segment of `/profiles/delete/3`. The router matches it,
+     * casts it and names it, so a non-numeric id is a 404 and never a lookup.
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public static function params(): array
+    {
+        return [
+            'id' => ['type' => 'int', 'match' => '\d+'],
+        ];
     }
 }

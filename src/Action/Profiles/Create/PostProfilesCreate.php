@@ -11,7 +11,7 @@
 
 declare(strict_types=1);
 
-namespace Vokuro\Action\Users;
+namespace Vokuro\Action\Profiles\Create;
 
 use Phalcon\ADR\Input\Input;
 use Phalcon\ADR\Payload\Payload;
@@ -24,19 +24,16 @@ use Phalcon\Contracts\Http\AttributeRequest;
 use Phalcon\Http\Response;
 use Phalcon\Http\ResponseInterface;
 use Vokuro\Contracts\Csrf;
-use Vokuro\Contracts\Repository\ProfileRepository;
-use Vokuro\Domain\Users\CreateUser;
+use Vokuro\Domain\Profiles\CreateProfile;
 use Vokuro\Responder\PrivateResponder;
 
 /**
- * Creates a user. A success redirects to the list; a rejection renders the
- * form again with the per-field errors.
+ * Creates a profile.
  */
-final class PostUsersCreate implements Action
+final class PostProfilesCreate implements Action
 {
     public function __construct(
-        private CreateUser $domain,
-        private ProfileRepository $profiles,
+        private CreateProfile $domain,
         private PrivateResponder $view,
         private RedirectResponder $redirect,
         private Csrf $csrf
@@ -46,10 +43,7 @@ final class PostUsersCreate implements Action
     public function __invoke(AttributeRequest $request): ResponseInterface
     {
         if (false === $this->csrf->check($request)) {
-            return $this->form(
-                $request,
-                Payload::invalid(['csrf' => 'The form has expired, please try again'])
-            );
+            return $this->form($request, Payload::invalid(['csrf' => 'The form has expired, please try again']));
         }
 
         $payload = ($this->domain)(Input::fromRequest($request));
@@ -61,7 +55,7 @@ final class PostUsersCreate implements Action
         return ($this->redirect)(
             $request,
             new Response(),
-            Payload::found(new Redirect('/users'))
+            Payload::found(new Redirect('/profiles'))
         );
     }
 
@@ -69,12 +63,7 @@ final class PostUsersCreate implements Action
         AttributeRequest $request,
         PayloadInterface $payload
     ): ResponseInterface {
-        $payload = $payload->withResult(
-            ['profiles' => $this->profiles->listForSelect()]
-            + (array) $payload->getResult()
-        );
-
-        return ($this->view->withTemplate('users/create'))(
+        return ($this->view->withTemplate('profiles/create'))(
             $request,
             new Response(),
             $payload

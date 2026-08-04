@@ -11,7 +11,7 @@
 
 declare(strict_types=1);
 
-namespace Vokuro\Action\Confirm;
+namespace Vokuro\Action\ResetPassword;
 
 use Phalcon\ADR\Input\Input;
 use Phalcon\ADR\Payload\Payload;
@@ -23,17 +23,20 @@ use Phalcon\Contracts\Http\AttributeRequest;
 use Phalcon\Http\Response;
 use Phalcon\Http\ResponseInterface;
 use Phalcon\Session\ManagerInterface;
-use Vokuro\Domain\Confirm\ConfirmEmail;
+use Vokuro\Domain\Session\ResetPassword;
 
 /**
- * Handles the confirmation link from the e-mail, `/confirm/{code}/{email}`. A
- * confirmed user is signed in and sent on to change their password when they
- * still owe one, or to the management area otherwise.
+ * Handles the reset link from the e-mail, `/reset-password/{code}/{email}`.
+ *
+ * A live code signs the user in and drops them on the change-password form -
+ * the point of the link, and the reason it is not behind `RequireLogin`: it is
+ * how a locked-out user gets a session in the first place. A spent code goes to
+ * the login form instead, so following the same link twice is harmless.
  */
-final class GetConfirm implements Action
+final class GetResetPassword implements Action
 {
     public function __construct(
-        private ConfirmEmail $domain,
+        private ResetPassword $domain,
         private RedirectResponder $redirect,
         private ManagerInterface $session
     ) {
@@ -58,10 +61,10 @@ final class GetConfirm implements Action
     }
 
     /**
-     * The mail builds `/confirm/{code}/{email}`. The code is alphanumeric by
-     * construction, so the pattern turns a mangled link into a 404 before the
-     * domain ever queries. The address is named for the route's sake - the
-     * code alone identifies the confirmation - and lower cased on the way in.
+     * Declared exactly as {@see \Vokuro\Action\Confirm\GetConfirm}: the mail
+     * builds both segments, the code is alphanumeric by construction, and the
+     * address is named for the route's sake - the code alone identifies the
+     * request.
      *
      * @return array<string, array<string, mixed>>
      */
@@ -88,8 +91,6 @@ final class GetConfirm implements Action
             ]
         );
 
-        return true === $user['mustChangePassword']
-            ? '/users/changePassword'
-            : '/users';
+        return '/users/changePassword';
     }
 }

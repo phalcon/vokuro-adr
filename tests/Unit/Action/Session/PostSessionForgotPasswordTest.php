@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Vokuro\Tests\Unit\Action\Session;
 
-use Vokuro\Action\Session\PostSessionForgotPassword;
+use Vokuro\Action\Session\ForgotPassword\PostSessionForgotPassword;
 use Vokuro\Contracts\Csrf;
 use Vokuro\Domain\Model\User;
 use Vokuro\Domain\Session\ForgotPassword;
@@ -38,7 +38,7 @@ final class PostSessionForgotPasswordTest extends AbstractActionTestCase
     }
 
     /**
-     * Unit Tests Vokuro\Action\Session\PostSessionForgotPassword :: a bad CSRF token re-renders the form
+     * Unit Tests Vokuro\Action\Session\ForgotPassword\PostSessionForgotPassword :: a bad CSRF token re-renders the form
      */
     public function testBadCsrfRerendersForm(): void
     {
@@ -49,7 +49,7 @@ final class PostSessionForgotPasswordTest extends AbstractActionTestCase
     }
 
     /**
-     * Unit Tests Vokuro\Action\Session\PostSessionForgotPassword :: a known address issues a reset and renders
+     * Unit Tests Vokuro\Action\Session\ForgotPassword\PostSessionForgotPassword :: a known address issues a reset and renders
      */
     public function testKnownAddressIssuesReset(): void
     {

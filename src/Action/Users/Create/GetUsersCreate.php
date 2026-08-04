@@ -11,31 +11,33 @@
 
 declare(strict_types=1);
 
-namespace Vokuro\Action\Session;
+namespace Vokuro\Action\Users\Create;
 
 use Phalcon\ADR\Payload\Payload;
 use Phalcon\Contracts\ADR\Action;
 use Phalcon\Contracts\Http\AttributeRequest;
 use Phalcon\Http\Response;
 use Phalcon\Http\ResponseInterface;
-use Vokuro\Responder\AuthResponder;
+use Vokuro\Contracts\Repository\ProfileRepository;
+use Vokuro\Responder\PrivateResponder;
 
 /**
- * Shows the registration form.
+ * Shows the form for a new user.
  */
-final class GetSessionSignup implements Action
+final class GetUsersCreate implements Action
 {
     public function __construct(
-        private AuthResponder $responder
+        private ProfileRepository $profiles,
+        private PrivateResponder $responder
     ) {
     }
 
     public function __invoke(AttributeRequest $request): ResponseInterface
     {
-        return ($this->responder->withTemplate('session/signup'))(
+        return ($this->responder->withTemplate('users/create'))(
             $request,
             new Response(),
-            Payload::success()
+            Payload::success(['profiles' => $this->profiles->listForSelect()])
         );
     }
 }

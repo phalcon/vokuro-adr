@@ -20,6 +20,7 @@ final class ResetPassword
 {
     public function __construct(
         public readonly int $id,
+        public readonly int $usersId,
         public readonly int $createdAt,
         public readonly bool $reset
     ) {

@@ -16,12 +16,12 @@ namespace Vokuro\Tests\Unit\Action;
 use Vokuro\Action\About\GetAbout;
 use Vokuro\Action\Get;
 use Vokuro\Action\Privacy\GetPrivacy;
-use Vokuro\Action\Profiles\GetProfilesCreate;
-use Vokuro\Action\Session\GetSessionForgotPassword;
-use Vokuro\Action\Session\GetSessionLogin;
-use Vokuro\Action\Session\GetSessionSignup;
+use Vokuro\Action\Profiles\Create\GetProfilesCreate;
+use Vokuro\Action\Session\ForgotPassword\GetSessionForgotPassword;
+use Vokuro\Action\Session\Login\GetSessionLogin;
+use Vokuro\Action\Session\Signup\GetSessionSignup;
 use Vokuro\Action\Terms\GetTerms;
-use Vokuro\Action\Users\GetUsersChangePassword;
+use Vokuro\Action\Users\ChangePassword\GetUsersChangePassword;
 
 final class RenderOnlyGetTest extends AbstractActionTestCase
 {

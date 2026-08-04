@@ -11,7 +11,7 @@
 
 declare(strict_types=1);
 
-namespace Vokuro\Action\Session;
+namespace Vokuro\Action\Session\Signup;
 
 use Phalcon\ADR\Input\Input;
 use Phalcon\ADR\Payload\Payload;
@@ -20,17 +20,17 @@ use Phalcon\Contracts\Http\AttributeRequest;
 use Phalcon\Http\Response;
 use Phalcon\Http\ResponseInterface;
 use Vokuro\Contracts\Csrf;
-use Vokuro\Domain\Session\ForgotPassword;
+use Vokuro\Domain\Session\SignUp;
 use Vokuro\Responder\AuthResponder;
 
 /**
- * Asks for a reset link. The page it renders is the same either way: the
- * outcome only changes the message shown above the form.
+ * Registers an account. The page is rendered again either way: with the
+ * per-field errors, or with the confirmation notice.
  */
-final class PostSessionForgotPassword implements Action
+final class PostSessionSignup implements Action
 {
     public function __construct(
-        private ForgotPassword $domain,
+        private SignUp $domain,
         private AuthResponder $responder,
         private Csrf $csrf
     ) {
@@ -38,13 +38,15 @@ final class PostSessionForgotPassword implements Action
 
     public function __invoke(AttributeRequest $request): ResponseInterface
     {
-        $payload = Payload::invalid(['The form has expired, please try again']);
+        $payload = Payload::invalid(
+            ['csrf' => 'The form has expired, please try again']
+        );
 
         if (true === $this->csrf->check($request)) {
             $payload = ($this->domain)(Input::fromRequest($request));
         }
 
-        return ($this->responder->withTemplate('session/forgotPassword'))(
+        return ($this->responder->withTemplate('session/signup'))(
             $request,
             new Response(),
             $payload

@@ -11,7 +11,7 @@
 
 declare(strict_types=1);
 
-namespace Vokuro\Action\Users;
+namespace Vokuro\Action\Profiles\Search;
 
 use Phalcon\ADR\Payload\Payload;
 use Phalcon\Contracts\ADR\Action;
@@ -22,10 +22,12 @@ use Vokuro\Contracts\Repository\ProfileRepository;
 use Vokuro\Responder\PrivateResponder;
 
 /**
- * Shows the form for a new user.
+ * The profile search results.
  */
-final class GetUsersCreate implements Action
+final class GetProfilesSearch implements Action
 {
+    private const PER_PAGE = 10;
+
     public function __construct(
         private ProfileRepository $profiles,
         private PrivateResponder $responder
@@ -34,10 +36,25 @@ final class GetUsersCreate implements Action
 
     public function __invoke(AttributeRequest $request): ResponseInterface
     {
-        return ($this->responder->withTemplate('users/create'))(
+        $query   = $request->getQuery();
+        $filters = [
+            'id'   => $query['id'] ?? '',
+            'name' => $query['name'] ?? '',
+        ];
+
+        $page = $this->profiles->page(
+            (int) ($query['page'] ?? 1),
+            self::PER_PAGE,
+            $filters
+        );
+
+        return ($this->responder->withTemplate('profiles/search'))(
             $request,
             new Response(),
-            Payload::success(['profiles' => $this->profiles->listForSelect()])
+            Payload::success([
+                'page'  => $page,
+                'query' => http_build_query(array_filter($filters)),
+            ])
         );
     }
 }

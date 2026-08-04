@@ -23,7 +23,7 @@ It runs on **Phalcon v6** (the `phalcon/phalcon` package). Phalcon v5 (the C ext
 
 A request flows **Action → Domain → Responder**:
 
-* **Action** (`src/Action`) - one class per route. It reads the request, calls a domain, and hands the resulting payload to a responder. The responder it type-hints selects the layout.
+* **Action** (`src/Action`) - one class per route, found by convention rather than a route table: `POST /users/edit/3` is `Action\Users\Edit\PostUsersEdit` with `id` as a route attribute. It reads the request, calls a domain, and hands the resulting payload to a responder. The responder it type-hints selects the layout.
 * **Domain** (`src/Domain`) - the use cases (sign in, register, save a profile) with their entities, value objects, and collections. A domain returns a `Phalcon\ADR` payload and knows nothing about HTTP.
 * **Responder** (`src/Responder`) - turns a payload into a response: HTML in a layout, a redirect, or JSON for an error.
 
@@ -34,7 +34,7 @@ Everything the actions and domains depend on is a **port** (`src/Contracts`) - r
 The `docs/` folder covers the port in depth:
 
 * [Installation](docs/installation.md) - Docker and local setup, environment variables, and choosing the PHP version.
-* [Architecture](docs/architecture.md) - the ADR layers, ports and adapters, middleware, and the composition root.
+* [Architecture](docs/architecture.md) - the ADR layers, the routing convention, ports and adapters, middleware, and the composition root.
 * [Payloads](docs/payload.md) - the payload contract between domains and responders, and how it maps to HTTP.
 * [Testing](docs/testing.md) - the unit and integration suites, the fake pattern, and the coverage merge.
 

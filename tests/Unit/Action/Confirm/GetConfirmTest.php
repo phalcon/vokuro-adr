@@ -29,7 +29,7 @@ final class GetConfirmTest extends AbstractActionTestCase
     public function testUnknownCodeRedirectsHome(): void
     {
         $response = $this->action(new FakeEmailConfirmationRepository(), new FakeUserRepository())(
-            $this->request(attributes: [0 => 'nope'])
+            $this->request(attributes: ['code' => 'nope'])
         );
 
         $this->assertSame(302, $response->getStatusCode());
@@ -45,7 +45,7 @@ final class GetConfirmTest extends AbstractActionTestCase
             ->seed('code', new EmailConfirmation(1, 7, true));
 
         $response = $this->action($confirmations, new FakeUserRepository())(
-            $this->request(attributes: [0 => 'code'])
+            $this->request(attributes: ['code' => 'code'])
         );
 
         $this->assertSame('/session/login', $response->getHeaders()->get('Location'));
@@ -59,7 +59,7 @@ final class GetConfirmTest extends AbstractActionTestCase
         $response = $this->action(
             (new FakeEmailConfirmationRepository())->seed('code', new EmailConfirmation(1, 7, false)),
             (new FakeUserRepository())->seed($this->user(true))
-        )($this->request(attributes: [0 => 'code']));
+        )($this->request(attributes: ['code' => 'code']));
 
         $this->assertSame('/users/changePassword', $response->getHeaders()->get('Location'));
         $this->assertSame(7, $this->session->get('auth')['id']);
@@ -73,7 +73,7 @@ final class GetConfirmTest extends AbstractActionTestCase
         $response = $this->action(
             (new FakeEmailConfirmationRepository())->seed('code', new EmailConfirmation(1, 7, false)),
             (new FakeUserRepository())->seed($this->user(false))
-        )($this->request(attributes: [0 => 'code']));
+        )($this->request(attributes: ['code' => 'code']));
 
         $this->assertSame('/users', $response->getHeaders()->get('Location'));
     }

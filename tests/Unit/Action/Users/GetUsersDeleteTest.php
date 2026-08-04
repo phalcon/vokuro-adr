@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Vokuro\Tests\Unit\Action\Users;
 
-use Vokuro\Action\Users\GetUsersDelete;
+use Vokuro\Action\Users\Delete\GetUsersDelete;
 use Vokuro\Domain\Model\User;
 use Vokuro\Tests\Support\Fake\FakeUserRepository;
 use Vokuro\Tests\Unit\Action\AbstractActionTestCase;
@@ -21,7 +21,7 @@ use Vokuro\Tests\Unit\Action\AbstractActionTestCase;
 final class GetUsersDeleteTest extends AbstractActionTestCase
 {
     /**
-     * Unit Tests Vokuro\Action\Users\GetUsersDelete :: deletes the user and returns to the list
+     * Unit Tests Vokuro\Action\Users\Delete\GetUsersDelete :: deletes the user and returns to the list
      */
     public function testDeletesAndRedirects(): void
     {
@@ -30,7 +30,7 @@ final class GetUsersDeleteTest extends AbstractActionTestCase
         );
 
         $response = (new GetUsersDelete($users, $this->redirectResponder()))(
-            $this->request(attributes: [0 => 3])
+            $this->request(attributes: ['id' => 3])
         );
 
         $this->assertSame(302, $response->getStatusCode());
@@ -39,14 +39,14 @@ final class GetUsersDeleteTest extends AbstractActionTestCase
     }
 
     /**
-     * Unit Tests Vokuro\Action\Users\GetUsersDelete :: a missing user still returns to the list
+     * Unit Tests Vokuro\Action\Users\Delete\GetUsersDelete :: a missing user still returns to the list
      */
     public function testMissingUserStillRedirects(): void
     {
         $users = new FakeUserRepository();
 
         $response = (new GetUsersDelete($users, $this->redirectResponder()))(
-            $this->request(attributes: [0 => 999])
+            $this->request(attributes: ['id' => 999])
         );
 
         $this->assertSame(302, $response->getStatusCode());

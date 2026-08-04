@@ -11,7 +11,7 @@
 
 declare(strict_types=1);
 
-namespace Vokuro\Action\Users;
+namespace Vokuro\Action\Profiles\Edit;
 
 use Phalcon\ADR\Payload\Payload;
 use Phalcon\ADR\Responder\Redirect;
@@ -20,25 +20,18 @@ use Phalcon\Contracts\ADR\Action;
 use Phalcon\Contracts\Http\AttributeRequest;
 use Phalcon\Http\Response;
 use Phalcon\Http\ResponseInterface;
-use Vokuro\Contracts\Repository\PasswordChangeRepository;
 use Vokuro\Contracts\Repository\ProfileRepository;
-use Vokuro\Contracts\Repository\ResetPasswordRepository;
-use Vokuro\Contracts\Repository\SuccessLoginRepository;
 use Vokuro\Contracts\Repository\UserRepository;
 use Vokuro\Responder\PrivateResponder;
 
 /**
- * Shows the edit form for a user. The id is the first path attribute, so
- * `/users/edit/3` edits user 3. A missing user returns to the list.
+ * Shows the edit form for a profile, with the users assigned to it.
  */
-final class GetUsersEdit implements Action
+final class GetProfilesEdit implements Action
 {
     public function __construct(
-        private UserRepository $users,
         private ProfileRepository $profiles,
-        private SuccessLoginRepository $logins,
-        private PasswordChangeRepository $passwordChanges,
-        private ResetPasswordRepository $resets,
+        private UserRepository $users,
         private PrivateResponder $view,
         private RedirectResponder $redirect
     ) {
@@ -46,26 +39,36 @@ final class GetUsersEdit implements Action
 
     public function __invoke(AttributeRequest $request): ResponseInterface
     {
-        $user = $this->users->findById((int) $request->getAttributes()->get(0));
+        $profile = $this->profiles->findById($request->getAttributes()->get('id', 0));
 
-        if (null === $user) {
+        if (null === $profile) {
             return ($this->redirect)(
                 $request,
                 new Response(),
-                Payload::found(new Redirect('/users'))
+                Payload::found(new Redirect('/profiles'))
             );
         }
 
-        return ($this->view->withTemplate('users/edit'))(
+        return ($this->view->withTemplate('profiles/edit'))(
             $request,
             new Response(),
             Payload::success([
-                'user'            => $user,
-                'profiles'        => $this->profiles->listForSelect(),
-                'logins'          => $this->logins->forUser($user->id),
-                'passwordChanges' => $this->passwordChanges->forUser($user->id),
-                'resets'          => $this->resets->forUser($user->id),
+                'profile' => $profile,
+                'users'   => $this->users->byProfile($profile->id),
             ])
         );
+    }
+
+    /**
+     * The trailing segment of `/profiles/edit/3`. The router matches it, casts
+     * it and names it, so a non-numeric id is a 404 and never a lookup.
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public static function params(): array
+    {
+        return [
+            'id' => ['type' => 'int', 'match' => '\d+'],
+        ];
     }
 }

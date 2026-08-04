@@ -85,6 +85,7 @@ class AppFront extends AbstractHttpFront
     {
         return (new Application($container))
             ->setBaseNamespace('Vokuro\\Action')
+            ->setActionDirectory($this->projectRoot . '/src/Action')
             ->secureWith(RequireLogin::class, '\\Users\\')
             ->secureWith(RequirePermission::class, '\\Users\\')
             ->secureWith(RequireLogin::class, '\\Profiles\\')

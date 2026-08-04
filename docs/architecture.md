@@ -16,9 +16,73 @@ flowchart LR
 
 `AppFront` boots a container, the router maps the path to an action, the global and route middleware run, the action calls a domain and hands the returned payload to a responder, and the responder produces the response.
 
+## Routing
+
+There is no route table, no compile step, and no cache. The router derives one class from the method and the path, and derives the path back from the class:
+
+* every static path segment is a namespace segment under `Vokuro\Action`;
+* the class name is the HTTP verb followed by all of those segments concatenated;
+* whatever the path has left over becomes a route attribute.
+
+| Request | Action | Attributes |
+| --- | --- | --- |
+| `GET /` | `Action\Get` | |
+| `GET /users` | `Action\Users\GetUsers` | |
+| `GET /users/search` | `Action\Users\Search\GetUsersSearch` | |
+| `POST /users/edit/3` | `Action\Users\Edit\PostUsersEdit` | `id` = `3` |
+| `GET /confirm/AbC123/a@b.dev` | `Action\Confirm\GetConfirm` | `code`, `email` |
+
+One path names exactly one class, and that class names exactly one path. Nothing can be shadowed, and adding or deleting an action can never move another one's URL. The cost is that **arguments always trail the static path** - `/users/edit/3`, never `/users/3/edit`.
+
+Because directories are what tell the router where the static path ends, the namespace and the filesystem have to agree. `AppFront` hands it both halves:
+
+```php
+(new Application($container))
+    ->setBaseNamespace('Vokuro\\Action')
+    ->setActionDirectory($this->projectRoot . '/src/Action')
+```
+
+A segment with no matching directory ends the static path and becomes an attribute instead, so the directory layout under `src/Action` is load-bearing: it mirrors the URLs exactly, one directory per segment.
+
+Words inside a segment are separated by `-` by default, applied symmetrically in both directions: `Users\ChangePassword\GetUsersChangePassword` reverses to `/users/change-password`. The camelCase links the views use (`/users/changePassword`) resolve to the same class, since both spellings camelize to `ChangePassword`.
+
+### Route attributes
+
+Trailing segments arrive as positional request attributes. An action that declares a static `params()` gets them checked, cast, converted, and **named** before it is invoked:
+
+```php
+final class GetUsersEdit implements Action
+{
+    public function __invoke(AttributeRequest $request): ResponseInterface
+    {
+        $user = $this->users->findById($request->getAttributes()->get('id', 0));
+        // ...
+    }
+
+    public static function params(): array
+    {
+        return [
+            'id' => ['type' => 'int', 'match' => '\d+'],
+        ];
+    }
+}
+```
+
+Declaration order maps to segment order, and each entry takes up to three keys:
+
+| Key | Effect |
+| --- | --- |
+| `match` | regex the whole segment must satisfy; a miss is a `404` raised before the action is built |
+| `type` | `int`, `float`, or `string` (the default) |
+| `convert` | any callable, applied after the cast |
+
+So `GET /users/edit/abc` never reaches `GetUsersEdit` - it is a `404`, not a lookup for user `0`. The eight actions that take arguments (`Users\Edit`, `Users\Delete`, `Profiles\Edit`, `Profiles\Delete`, `Confirm`, `ResetPassword`) declare `params()`; every other action has no trailing segments and declares nothing.
+
+`params()` never affects **which** class matches - it constrains, casts and converts after the match, so a wrong declaration is a validation bug, never a missing route. It does feed reverse routing: `pathFor(GetUsersEdit::class)` answers `/users/edit/{id}`, and `pathFor(GetConfirm::class)` answers `/confirm/{code}/{email}`.
+
 ## Action
 
-`src/Action` - one class per route, each implementing `Phalcon\Contracts\ADR\Action` with a single `__invoke(AttributeRequest)`. An action is thin: it reads the request, calls a domain, and hands the payload to a responder. It carries no business rules.
+`src/Action` - one class per route, each implementing `Phalcon\Contracts\ADR\Action` with a single `__invoke(AttributeRequest)`, and a static `params()` when the route takes arguments. An action is thin: it reads the request, calls a domain, and hands the payload to a responder. It carries no business rules.
 
 The responder an action **type-hints** is how it chooses a layout. A public page asks for the `AuthResponder` or a plain `ViewResponder`; a management page asks for the `PrivateResponder`. The action never names a layout string.
 
@@ -94,7 +158,7 @@ CSRF sits behind the `Csrf` port (`token()` for views, `check(request)` for acti
 
 ## The composition root
 
-`src/AppFront.php` extends `Phalcon\ADR\Front\AbstractHttpFront`. It builds a `Phalcon\Container\Container`, loads the environment, and registers the providers (the services above, the session, logger, and renderers). Its `getApplication()` override builds the `Phalcon\ADR\Application`, sets the router's base namespace with `setBaseNamespace()`, and attaches the route guards with `secureWith()` - `RequireLogin` and `RequirePermission` on the `Users`, `Profiles`, and `Permissions` namespaces. The framework then matches the route, runs the middleware and action, and emits the response.
+`src/AppFront.php` extends `Phalcon\ADR\Front\AbstractHttpFront`. It builds a `Phalcon\Container\Container`, loads the environment, and registers the providers (the services above, the session, logger, and renderers). Its `getApplication()` override builds the `Phalcon\ADR\Application`, points the router at the actions with `setBaseNamespace()` and `setActionDirectory()` (see [Routing](#routing)), and attaches the route guards with `secureWith()` - `RequireLogin` and `RequirePermission` on the `Users`, `Profiles`, and `Permissions` namespaces. Guards are matched by namespace prefix, so they cover everything nested below, `Users\Edit\PostUsersEdit` included. The framework then matches the route, runs the middleware and action, and emits the response.
 
 Two deliberate choices:
 

@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Vokuro\Tests\Unit\Action\Users;
 
 use Phalcon\Encryption\Security;
-use Vokuro\Action\Users\PostUsersChangePassword;
+use Vokuro\Action\Users\ChangePassword\PostUsersChangePassword;
 use Vokuro\Contracts\Csrf;
 use Vokuro\Domain\Model\User;
 use Vokuro\Domain\Users\ChangePassword;
@@ -36,7 +36,7 @@ final class PostUsersChangePasswordTest extends AbstractActionTestCase
     }
 
     /**
-     * Unit Tests Vokuro\Action\Users\PostUsersChangePassword :: a bad CSRF token re-renders the form
+     * Unit Tests Vokuro\Action\Users\ChangePassword\PostUsersChangePassword :: a bad CSRF token re-renders the form
      */
     public function testBadCsrfRerendersForm(): void
     {
@@ -46,7 +46,7 @@ final class PostUsersChangePasswordTest extends AbstractActionTestCase
     }
 
     /**
-     * Unit Tests Vokuro\Action\Users\PostUsersChangePassword :: an invalid submission re-renders the form
+     * Unit Tests Vokuro\Action\Users\ChangePassword\PostUsersChangePassword :: an invalid submission re-renders the form
      */
     public function testInvalidRerendersForm(): void
     {
@@ -62,7 +62,7 @@ final class PostUsersChangePasswordTest extends AbstractActionTestCase
     }
 
     /**
-     * Unit Tests Vokuro\Action\Users\PostUsersChangePassword :: a valid change updates and redirects
+     * Unit Tests Vokuro\Action\Users\ChangePassword\PostUsersChangePassword :: a valid change updates and redirects
      */
     public function testChangesAndRedirects(): void
     {

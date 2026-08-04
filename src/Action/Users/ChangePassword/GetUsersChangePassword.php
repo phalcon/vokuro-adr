@@ -11,29 +11,28 @@
 
 declare(strict_types=1);
 
-namespace Vokuro\Action\Session;
+namespace Vokuro\Action\Users\ChangePassword;
 
 use Phalcon\ADR\Payload\Payload;
 use Phalcon\Contracts\ADR\Action;
 use Phalcon\Contracts\Http\AttributeRequest;
 use Phalcon\Http\Response;
 use Phalcon\Http\ResponseInterface;
-use Vokuro\Responder\AuthResponder;
+use Vokuro\Responder\PrivateResponder;
 
 /**
- * Shows the login form. Asking for the `AuthResponder` is what puts the page
- * in the authentication layout.
+ * Shows the form for the signed in user to change their own password.
  */
-final class GetSessionLogin implements Action
+final class GetUsersChangePassword implements Action
 {
     public function __construct(
-        private AuthResponder $responder
+        private PrivateResponder $responder
     ) {
     }
 
     public function __invoke(AttributeRequest $request): ResponseInterface
     {
-        return ($this->responder->withTemplate('session/login'))(
+        return ($this->responder->withTemplate('users/changePassword'))(
             $request,
             new Response(),
             Payload::success()

@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Vokuro\Tests\Unit\Action\Session;
 
 use Phalcon\Encryption\Security;
-use Vokuro\Action\Session\PostSessionLogin;
+use Vokuro\Action\Session\Login\PostSessionLogin;
 use Vokuro\Application\RememberMe;
 use Vokuro\Contracts\Csrf;
 use Vokuro\Domain\Model\User;
@@ -45,7 +45,7 @@ final class PostSessionLoginTest extends AbstractActionTestCase
     }
 
     /**
-     * Unit Tests Vokuro\Action\Session\PostSessionLogin :: a bad CSRF token re-renders the form
+     * Unit Tests Vokuro\Action\Session\Login\PostSessionLogin :: a bad CSRF token re-renders the form
      */
     public function testBadCsrfRerendersForm(): void
     {
@@ -57,7 +57,7 @@ final class PostSessionLoginTest extends AbstractActionTestCase
     }
 
     /**
-     * Unit Tests Vokuro\Action\Session\PostSessionLogin :: wrong credentials re-render and record a failure
+     * Unit Tests Vokuro\Action\Session\Login\PostSessionLogin :: wrong credentials re-render and record a failure
      */
     public function testWrongCredentialsRerenderAndRecord(): void
     {
@@ -70,7 +70,7 @@ final class PostSessionLoginTest extends AbstractActionTestCase
     }
 
     /**
-     * Unit Tests Vokuro\Action\Session\PostSessionLogin :: a valid sign in redirects and stores the identity
+     * Unit Tests Vokuro\Action\Session\Login\PostSessionLogin :: a valid sign in redirects and stores the identity
      */
     public function testSuccessRedirectsAndSetsSession(): void
     {
@@ -86,7 +86,7 @@ final class PostSessionLoginTest extends AbstractActionTestCase
     }
 
     /**
-     * Unit Tests Vokuro\Action\Session\PostSessionLogin :: remembering the sign in stores a token
+     * Unit Tests Vokuro\Action\Session\Login\PostSessionLogin :: remembering the sign in stores a token
      */
     public function testRememberStoresToken(): void
     {

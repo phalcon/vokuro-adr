@@ -66,7 +66,7 @@ final class CollectionsTest extends AbstractUnitTestCase
         $profiles = new ProfileCollection([new Profile(3, 'Admins', true)]);
         $logins   = new SuccessLoginCollection([new SuccessLogin(4, 'ip', 'ua')]);
         $changes  = new PasswordChangeCollection([new PasswordChange(5, 'ip', 'ua', 1)]);
-        $resets   = new ResetPasswordCollection([new ResetPassword(6, 1, false)]);
+        $resets   = new ResetPasswordCollection([new ResetPassword(6, 7, 1, false)]);
 
         $this->assertCount(1, $profiles);
         $this->assertInstanceOf(Profile::class, $profiles->get('3'));

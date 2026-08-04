@@ -11,7 +11,7 @@
 
 declare(strict_types=1);
 
-namespace Vokuro\Action\Profiles;
+namespace Vokuro\Action\Profiles\Edit;
 
 use Phalcon\ADR\Input\Input;
 use Phalcon\ADR\Payload\Payload;
@@ -46,7 +46,7 @@ final class PostProfilesEdit implements Action
 
     public function __invoke(AttributeRequest $request): ResponseInterface
     {
-        $id = (int) $request->getAttributes()->get(0);
+        $id = $request->getAttributes()->get('id', 0);
 
         if (false === $this->csrf->check($request)) {
             return $this->form($request, $id, Payload::invalid(['csrf' => 'The form has expired, please try again']));
@@ -65,6 +65,19 @@ final class PostProfilesEdit implements Action
         }
 
         return $this->form($request, $id, $payload);
+    }
+
+    /**
+     * The trailing segment of `/profiles/edit/3`. Declared identically to the
+     * GET that renders the form, so both halves read the same id.
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public static function params(): array
+    {
+        return [
+            'id' => ['type' => 'int', 'match' => '\d+'],
+        ];
     }
 
     private function form(

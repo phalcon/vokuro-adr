@@ -15,6 +15,7 @@ namespace Vokuro\Tests\Support\Fake;
 
 use Vokuro\Contracts\Repository\ResetPasswordRepository;
 use Vokuro\Domain\Collection\ResetPasswordCollection;
+use Vokuro\Domain\Model\ResetPassword;
 
 /**
  * In-memory {@see ResetPasswordRepository}.
@@ -24,6 +25,19 @@ final class FakeResetPasswordRepository implements ResetPasswordRepository
     /** @var array<int, array{userId: int, code: string}> */
     public array $added = [];
 
+    /** @var array<string, ResetPassword> */
+    public array $byCode = [];
+
+    /** @var array<int, int> */
+    public array $spent = [];
+
+    public function seed(string $code, ResetPassword $reset): self
+    {
+        $this->byCode[$code] = $reset;
+
+        return $this;
+    }
+
     public function add(int $userId, string $code): string
     {
         $this->added[] = ['userId' => $userId, 'code' => $code];
@@ -31,8 +45,18 @@ final class FakeResetPasswordRepository implements ResetPasswordRepository
         return $code;
     }
 
+    public function findByCode(string $code): ?ResetPassword
+    {
+        return $this->byCode[$code] ?? null;
+    }
+
     public function forUser(int $userId): ResetPasswordCollection
     {
         return new ResetPasswordCollection([]);
+    }
+
+    public function markReset(int $id): void
+    {
+        $this->spent[] = $id;
     }
 }

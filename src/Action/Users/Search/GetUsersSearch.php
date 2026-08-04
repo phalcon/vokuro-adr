@@ -11,7 +11,7 @@
 
 declare(strict_types=1);
 
-namespace Vokuro\Action\Users;
+namespace Vokuro\Action\Users\Search;
 
 use Phalcon\ADR\Payload\Payload;
 use Phalcon\Contracts\ADR\Action;

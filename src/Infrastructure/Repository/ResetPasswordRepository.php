@@ -51,12 +51,38 @@ final class ResetPasswordRepository implements ResetPasswordRepositoryInterface
         return $code;
     }
 
+    public function findByCode(string $code): ?ResetPassword
+    {
+        $select = $this->queryFactory->newSelect($this->connection);
+        $select
+            ->from('reset_passwords')
+            ->columns(['id', 'usersId', 'createdAt', 'reset'])
+            ->where('code = ', $code)
+            ->limit(1);
+
+        $row = $this->connection->fetchOne(
+            $select->getStatement(),
+            $select->getBindValues()
+        );
+
+        if ([] === $row) {
+            return null;
+        }
+
+        return new ResetPassword(
+            id: (int) $row['id'],
+            usersId: (int) $row['usersId'],
+            createdAt: (int) $row['createdAt'],
+            reset: 'Y' === $row['reset']
+        );
+    }
+
     public function forUser(int $userId): ResetPasswordCollection
     {
         $select = $this->queryFactory->newSelect($this->connection);
         $select
             ->from('reset_passwords')
-            ->columns(['id', 'createdAt', 'reset'])
+            ->columns(['id', 'usersId', 'createdAt', 'reset'])
             ->where('usersId = ', $userId)
             ->orderBy(['id DESC']);
 
@@ -69,11 +95,23 @@ final class ResetPasswordRepository implements ResetPasswordRepositoryInterface
             array_map(
                 fn(array $row): ResetPassword => new ResetPassword(
                     id: (int) $row['id'],
+                    usersId: (int) $row['usersId'],
                     createdAt: (int) $row['createdAt'],
                     reset: 'Y' === $row['reset']
                 ),
                 $rows
             )
         );
+    }
+
+    public function markReset(int $id): void
+    {
+        $update = $this->queryFactory->newUpdate($this->connection);
+        $update
+            ->from('reset_passwords')
+            ->columns(['reset' => 'Y', 'modifiedAt' => time()])
+            ->where('id = ', $id);
+
+        $update->perform();
     }
 }

@@ -11,28 +11,29 @@
 
 declare(strict_types=1);
 
-namespace Vokuro\Action\Profiles;
+namespace Vokuro\Action\Session\Login;
 
 use Phalcon\ADR\Payload\Payload;
 use Phalcon\Contracts\ADR\Action;
 use Phalcon\Contracts\Http\AttributeRequest;
 use Phalcon\Http\Response;
 use Phalcon\Http\ResponseInterface;
-use Vokuro\Responder\PrivateResponder;
+use Vokuro\Responder\AuthResponder;
 
 /**
- * Shows the form for a new profile.
+ * Shows the login form. Asking for the `AuthResponder` is what puts the page
+ * in the authentication layout.
  */
-final class GetProfilesCreate implements Action
+final class GetSessionLogin implements Action
 {
     public function __construct(
-        private PrivateResponder $responder
+        private AuthResponder $responder
     ) {
     }
 
     public function __invoke(AttributeRequest $request): ResponseInterface
     {
-        return ($this->responder->withTemplate('profiles/create'))(
+        return ($this->responder->withTemplate('session/login'))(
             $request,
             new Response(),
             Payload::success()

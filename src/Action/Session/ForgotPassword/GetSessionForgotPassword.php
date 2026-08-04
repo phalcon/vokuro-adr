@@ -11,40 +11,31 @@
 
 declare(strict_types=1);
 
-namespace Vokuro\Action\Users;
+namespace Vokuro\Action\Session\ForgotPassword;
 
 use Phalcon\ADR\Payload\Payload;
-use Phalcon\ADR\Responder\Redirect;
-use Phalcon\ADR\Responder\RedirectResponder;
 use Phalcon\Contracts\ADR\Action;
 use Phalcon\Contracts\Http\AttributeRequest;
 use Phalcon\Http\Response;
 use Phalcon\Http\ResponseInterface;
-use Vokuro\Contracts\Repository\UserRepository;
+use Vokuro\Responder\AuthResponder;
 
 /**
- * Removes a user and returns to the list. The id is the first path attribute.
+ * Shows the form that asks for the address to send a reset link to.
  */
-final class GetUsersDelete implements Action
+final class GetSessionForgotPassword implements Action
 {
     public function __construct(
-        private UserRepository $users,
-        private RedirectResponder $redirect
+        private AuthResponder $responder
     ) {
     }
 
     public function __invoke(AttributeRequest $request): ResponseInterface
     {
-        $id = (int) $request->getAttributes()->get(0);
-
-        if (null !== $this->users->findById($id)) {
-            $this->users->delete($id);
-        }
-
-        return ($this->redirect)(
+        return ($this->responder->withTemplate('session/forgotPassword'))(
             $request,
             new Response(),
-            Payload::found(new Redirect('/users'))
+            Payload::success()
         );
     }
 }

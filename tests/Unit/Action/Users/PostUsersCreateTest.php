@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Vokuro\Tests\Unit\Action\Users;
 
 use Phalcon\Encryption\Security;
-use Vokuro\Action\Users\PostUsersCreate;
+use Vokuro\Action\Users\Create\PostUsersCreate;
 use Vokuro\Contracts\Csrf;
 use Vokuro\Domain\Users\CreateUser;
 use Vokuro\Tests\Support\Fake\FakeCsrf;
@@ -36,7 +36,7 @@ final class PostUsersCreateTest extends AbstractActionTestCase
     }
 
     /**
-     * Unit Tests Vokuro\Action\Users\PostUsersCreate :: a bad CSRF token re-renders the form
+     * Unit Tests Vokuro\Action\Users\Create\PostUsersCreate :: a bad CSRF token re-renders the form
      */
     public function testBadCsrfRerendersForm(): void
     {
@@ -47,7 +47,7 @@ final class PostUsersCreateTest extends AbstractActionTestCase
     }
 
     /**
-     * Unit Tests Vokuro\Action\Users\PostUsersCreate :: an invalid submission re-renders the form
+     * Unit Tests Vokuro\Action\Users\Create\PostUsersCreate :: an invalid submission re-renders the form
      */
     public function testInvalidRerendersForm(): void
     {
@@ -60,7 +60,7 @@ final class PostUsersCreateTest extends AbstractActionTestCase
     }
 
     /**
-     * Unit Tests Vokuro\Action\Users\PostUsersCreate :: a valid submission creates and redirects
+     * Unit Tests Vokuro\Action\Users\Create\PostUsersCreate :: a valid submission creates and redirects
      */
     public function testCreatesAndRedirects(): void
     {

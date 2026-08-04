@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Vokuro\Tests\Unit\Action\Users;
 
-use Vokuro\Action\Users\PostUsersEdit;
+use Vokuro\Action\Users\Edit\PostUsersEdit;
 use Vokuro\Contracts\Csrf;
 use Vokuro\Domain\Model\User;
 use Vokuro\Domain\Users\UpdateUser;
@@ -34,13 +34,13 @@ final class PostUsersEditTest extends AbstractActionTestCase
     }
 
     /**
-     * Unit Tests Vokuro\Action\Users\PostUsersEdit :: a valid submission updates and redirects
+     * Unit Tests Vokuro\Action\Users\Edit\PostUsersEdit :: a valid submission updates and redirects
      */
     public function testUpdatesAndRedirects(): void
     {
         $this->seedUser();
 
-        $response = $this->action(new FakeCsrf())($this->request($this->fields(), [], [0 => 3]));
+        $response = $this->action(new FakeCsrf())($this->request($this->fields(), [], ['id' => 3]));
 
         $this->assertSame(302, $response->getStatusCode());
         $this->assertSame('/users', $response->getHeaders()->get('Location'));
@@ -48,46 +48,46 @@ final class PostUsersEditTest extends AbstractActionTestCase
     }
 
     /**
-     * Unit Tests Vokuro\Action\Users\PostUsersEdit :: an invalid submission re-renders the form
+     * Unit Tests Vokuro\Action\Users\Edit\PostUsersEdit :: an invalid submission re-renders the form
      */
     public function testInvalidRerendersForm(): void
     {
         $this->seedUser();
 
-        $this->action(new FakeCsrf())($this->request(['email' => 'bad'] + $this->fields(), [], [0 => 3]));
+        $this->action(new FakeCsrf())($this->request(['email' => 'bad'] + $this->fields(), [], ['id' => 3]));
 
         $this->assertSame('users/edit', $this->renderer->calls[0]['path']);
     }
 
     /**
-     * Unit Tests Vokuro\Action\Users\PostUsersEdit :: a missing user redirects to the list
+     * Unit Tests Vokuro\Action\Users\Edit\PostUsersEdit :: a missing user redirects to the list
      */
     public function testNotFoundRedirects(): void
     {
-        $response = $this->action(new FakeCsrf())($this->request($this->fields(), [], [0 => 999]));
+        $response = $this->action(new FakeCsrf())($this->request($this->fields(), [], ['id' => 999]));
 
         $this->assertSame(302, $response->getStatusCode());
         $this->assertSame('/users', $response->getHeaders()->get('Location'));
     }
 
     /**
-     * Unit Tests Vokuro\Action\Users\PostUsersEdit :: a bad CSRF token re-renders the form for a known user
+     * Unit Tests Vokuro\Action\Users\Edit\PostUsersEdit :: a bad CSRF token re-renders the form for a known user
      */
     public function testBadCsrfRerendersForm(): void
     {
         $this->seedUser();
 
-        $this->action(new FakeCsrf(valid: false))($this->request([], [], [0 => 3]));
+        $this->action(new FakeCsrf(valid: false))($this->request([], [], ['id' => 3]));
 
         $this->assertSame('users/edit', $this->renderer->calls[0]['path']);
     }
 
     /**
-     * Unit Tests Vokuro\Action\Users\PostUsersEdit :: a bad CSRF token for a missing user redirects
+     * Unit Tests Vokuro\Action\Users\Edit\PostUsersEdit :: a bad CSRF token for a missing user redirects
      */
     public function testBadCsrfMissingUserRedirects(): void
     {
-        $response = $this->action(new FakeCsrf(valid: false))($this->request([], [], [0 => 999]));
+        $response = $this->action(new FakeCsrf(valid: false))($this->request([], [], ['id' => 999]));
 
         $this->assertSame(302, $response->getStatusCode());
         $this->assertSame('/users', $response->getHeaders()->get('Location'));

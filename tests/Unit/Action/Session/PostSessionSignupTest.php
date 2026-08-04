@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Vokuro\Tests\Unit\Action\Session;
 
 use Phalcon\Encryption\Security;
-use Vokuro\Action\Session\PostSessionSignup;
+use Vokuro\Action\Session\Signup\PostSessionSignup;
 use Vokuro\Contracts\Csrf;
 use Vokuro\Domain\Session\SignUp;
 use Vokuro\Tests\Support\Fake\FakeCsrf;
@@ -35,7 +35,7 @@ final class PostSessionSignupTest extends AbstractActionTestCase
     }
 
     /**
-     * Unit Tests Vokuro\Action\Session\PostSessionSignup :: a bad CSRF token re-renders the form
+     * Unit Tests Vokuro\Action\Session\Signup\PostSessionSignup :: a bad CSRF token re-renders the form
      */
     public function testBadCsrfRerendersForm(): void
     {
@@ -46,7 +46,7 @@ final class PostSessionSignupTest extends AbstractActionTestCase
     }
 
     /**
-     * Unit Tests Vokuro\Action\Session\PostSessionSignup :: a valid submission registers and renders the notice
+     * Unit Tests Vokuro\Action\Session\Signup\PostSessionSignup :: a valid submission registers and renders the notice
      */
     public function testValidSubmissionRegisters(): void
     {

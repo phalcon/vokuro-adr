@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Vokuro\Tests\Unit\Action\Profiles;
 
-use Vokuro\Action\Profiles\PostProfilesCreate;
+use Vokuro\Action\Profiles\Create\PostProfilesCreate;
 use Vokuro\Contracts\Csrf;
 use Vokuro\Domain\Profiles\CreateProfile;
 use Vokuro\Tests\Support\Fake\FakeCsrf;
@@ -32,7 +32,7 @@ final class PostProfilesCreateTest extends AbstractActionTestCase
     }
 
     /**
-     * Unit Tests Vokuro\Action\Profiles\PostProfilesCreate :: a bad CSRF token re-renders the form
+     * Unit Tests Vokuro\Action\Profiles\Create\PostProfilesCreate :: a bad CSRF token re-renders the form
      */
     public function testBadCsrfRerendersForm(): void
     {
@@ -43,7 +43,7 @@ final class PostProfilesCreateTest extends AbstractActionTestCase
     }
 
     /**
-     * Unit Tests Vokuro\Action\Profiles\PostProfilesCreate :: an invalid submission re-renders the form
+     * Unit Tests Vokuro\Action\Profiles\Create\PostProfilesCreate :: an invalid submission re-renders the form
      */
     public function testInvalidRerendersForm(): void
     {
@@ -54,7 +54,7 @@ final class PostProfilesCreateTest extends AbstractActionTestCase
     }
 
     /**
-     * Unit Tests Vokuro\Action\Profiles\PostProfilesCreate :: a valid submission creates and redirects
+     * Unit Tests Vokuro\Action\Profiles\Create\PostProfilesCreate :: a valid submission creates and redirects
      */
     public function testCreatesAndRedirects(): void
     {

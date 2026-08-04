@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Vokuro\Contracts\Repository;
 
 use Vokuro\Domain\Collection\ResetPasswordCollection;
+use Vokuro\Domain\Model\ResetPassword;
 
 /**
  * Stores the single use codes that let a user set a new password.
@@ -26,7 +27,17 @@ interface ResetPasswordRepository
     public function add(int $userId, string $code): string;
 
     /**
+     * The request a code belongs to, or null when the code is unknown.
+     */
+    public function findByCode(string $code): ?ResetPassword;
+
+    /**
      * The reset requests made for a user, most recent first.
      */
     public function forUser(int $userId): ResetPasswordCollection;
+
+    /**
+     * Spends the code, so the same link cannot be followed twice.
+     */
+    public function markReset(int $id): void;
 }

@@ -51,9 +51,10 @@ final class RecordsTest extends AbstractUnitTestCase
      */
     public function testResetPassword(): void
     {
-        $record = new ResetPassword(id: 3, createdAt: 1700000001, reset: true);
+        $record = new ResetPassword(id: 3, usersId: 7, createdAt: 1700000001, reset: true);
 
         $this->assertSame(3, $record->id);
+        $this->assertSame(7, $record->usersId);
         $this->assertSame(1700000001, $record->createdAt);
         $this->assertTrue($record->reset);
     }

@@ -11,7 +11,7 @@
 
 declare(strict_types=1);
 
-namespace Vokuro\Action\Session;
+namespace Vokuro\Action\Session\Logout;
 
 use Phalcon\ADR\Payload\Payload;
 use Phalcon\ADR\Responder\Redirect;

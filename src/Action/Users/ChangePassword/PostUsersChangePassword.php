@@ -11,7 +11,7 @@
 
 declare(strict_types=1);
 
-namespace Vokuro\Action\Users;
+namespace Vokuro\Action\Users\ChangePassword;
 
 use Phalcon\ADR\Input\Input;
 use Phalcon\ADR\Payload\Payload;

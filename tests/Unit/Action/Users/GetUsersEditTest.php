@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Vokuro\Tests\Unit\Action\Users;
 
-use Vokuro\Action\Users\GetUsersEdit;
+use Vokuro\Action\Users\Edit\GetUsersEdit;
 use Vokuro\Domain\Model\User;
 use Vokuro\Tests\Support\Fake\FakePasswordChangeRepository;
 use Vokuro\Tests\Support\Fake\FakeProfileRepository;
@@ -25,7 +25,7 @@ use Vokuro\Tests\Unit\Action\AbstractActionTestCase;
 final class GetUsersEditTest extends AbstractActionTestCase
 {
     /**
-     * Unit Tests Vokuro\Action\Users\GetUsersEdit :: renders the edit form for an existing user
+     * Unit Tests Vokuro\Action\Users\Edit\GetUsersEdit :: renders the edit form for an existing user
      */
     public function testRendersEditForm(): void
     {
@@ -33,7 +33,7 @@ final class GetUsersEditTest extends AbstractActionTestCase
             new User(3, 'Sarah', 's@x.dev', 'h', 2, 'Users', true, false, false, false)
         );
 
-        $response = $this->action($users)($this->request(attributes: [0 => 3]));
+        $response = $this->action($users)($this->request(attributes: ['id' => 3]));
 
         $this->assertSame('users/edit', $this->renderer->calls[0]['path']);
         $this->assertSame(200, $response->getStatusCode());
@@ -44,11 +44,11 @@ final class GetUsersEditTest extends AbstractActionTestCase
     }
 
     /**
-     * Unit Tests Vokuro\Action\Users\GetUsersEdit :: a missing user returns to the list
+     * Unit Tests Vokuro\Action\Users\Edit\GetUsersEdit :: a missing user returns to the list
      */
     public function testMissingUserRedirects(): void
     {
-        $response = $this->action(new FakeUserRepository())($this->request(attributes: [0 => 999]));
+        $response = $this->action(new FakeUserRepository())($this->request(attributes: ['id' => 999]));
 
         $this->assertSame(302, $response->getStatusCode());
         $this->assertSame('/users', $response->getHeaders()->get('Location'));

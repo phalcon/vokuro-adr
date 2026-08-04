@@ -11,28 +11,28 @@
 
 declare(strict_types=1);
 
-namespace Vokuro\Action\Users;
+namespace Vokuro\Action\Session\Signup;
 
 use Phalcon\ADR\Payload\Payload;
 use Phalcon\Contracts\ADR\Action;
 use Phalcon\Contracts\Http\AttributeRequest;
 use Phalcon\Http\Response;
 use Phalcon\Http\ResponseInterface;
-use Vokuro\Responder\PrivateResponder;
+use Vokuro\Responder\AuthResponder;
 
 /**
- * Shows the form for the signed in user to change their own password.
+ * Shows the registration form.
  */
-final class GetUsersChangePassword implements Action
+final class GetSessionSignup implements Action
 {
     public function __construct(
-        private PrivateResponder $responder
+        private AuthResponder $responder
     ) {
     }
 
     public function __invoke(AttributeRequest $request): ResponseInterface
     {
-        return ($this->responder->withTemplate('users/changePassword'))(
+        return ($this->responder->withTemplate('session/signup'))(
             $request,
             new Response(),
             Payload::success()

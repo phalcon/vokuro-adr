@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Vokuro\Tests\Unit\Action\Profiles;
 
-use Vokuro\Action\Profiles\GetProfilesEdit;
+use Vokuro\Action\Profiles\Edit\GetProfilesEdit;
 use Vokuro\Domain\Model\Profile;
 use Vokuro\Tests\Support\Fake\FakeProfileRepository;
 use Vokuro\Tests\Support\Fake\FakeUserRepository;
@@ -22,13 +22,13 @@ use Vokuro\Tests\Unit\Action\AbstractActionTestCase;
 final class GetProfilesEditTest extends AbstractActionTestCase
 {
     /**
-     * Unit Tests Vokuro\Action\Profiles\GetProfilesEdit :: renders the edit form for an existing profile
+     * Unit Tests Vokuro\Action\Profiles\Edit\GetProfilesEdit :: renders the edit form for an existing profile
      */
     public function testRendersEditForm(): void
     {
         $profiles = (new FakeProfileRepository())->seed(new Profile(3, 'Auditors', true));
 
-        $response = $this->action($profiles)($this->request(attributes: [0 => 3]));
+        $response = $this->action($profiles)($this->request(attributes: ['id' => 3]));
 
         $this->assertSame('profiles/edit', $this->renderer->calls[0]['path']);
         $this->assertSame(200, $response->getStatusCode());
@@ -39,11 +39,11 @@ final class GetProfilesEditTest extends AbstractActionTestCase
     }
 
     /**
-     * Unit Tests Vokuro\Action\Profiles\GetProfilesEdit :: a missing profile returns to the list
+     * Unit Tests Vokuro\Action\Profiles\Edit\GetProfilesEdit :: a missing profile returns to the list
      */
     public function testMissingProfileRedirects(): void
     {
-        $response = $this->action(new FakeProfileRepository())($this->request(attributes: [0 => 999]));
+        $response = $this->action(new FakeProfileRepository())($this->request(attributes: ['id' => 999]));
 
         $this->assertSame(302, $response->getStatusCode());
         $this->assertSame('/profiles', $response->getHeaders()->get('Location'));

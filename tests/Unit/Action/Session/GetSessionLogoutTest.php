@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Vokuro\Tests\Unit\Action\Session;
 
-use Vokuro\Action\Session\GetSessionLogout;
+use Vokuro\Action\Session\Logout\GetSessionLogout;
 use Vokuro\Application\RememberMe;
 use Vokuro\Tests\Support\Fake\FakeCookies;
 use Vokuro\Tests\Support\Fake\FakeRememberTokenRepository;
@@ -23,7 +23,7 @@ use Vokuro\Tests\Unit\Action\AbstractActionTestCase;
 final class GetSessionLogoutTest extends AbstractActionTestCase
 {
     /**
-     * Unit Tests Vokuro\Action\Session\GetSessionLogout :: forgets the token, clears the session and goes home
+     * Unit Tests Vokuro\Action\Session\Logout\GetSessionLogout :: forgets the token, clears the session and goes home
      */
     public function testSignedInForgetsAndClears(): void
     {
@@ -39,7 +39,7 @@ final class GetSessionLogoutTest extends AbstractActionTestCase
     }
 
     /**
-     * Unit Tests Vokuro\Action\Session\GetSessionLogout :: a signed out visitor just goes home
+     * Unit Tests Vokuro\Action\Session\Logout\GetSessionLogout :: a signed out visitor just goes home
      */
     public function testSignedOutJustRedirects(): void
     {
