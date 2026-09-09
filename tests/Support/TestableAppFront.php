@@ -18,24 +18,15 @@ use Phalcon\Contracts\ADR\Application as ApplicationInterface;
 use Vokuro\AppFront;
 
 /**
- * Exposes the wired container so a test can boot the application without
- * dispatching or emitting. `AbstractHttpFront::run()` is final and emits, but
- * it only builds the container from these protected seams, which this surfaces.
+ * Exposes the Application so a test can handle a request without emitting.
+ * `AbstractHttpFront::run()` is final and emits, but it builds the Application
+ * from a protected seam, which this surfaces. The container comes from the
+ * public `AbstractHttpFront::boot()`.
  */
 final class TestableAppFront extends AppFront
 {
     public function application(Container $container): ApplicationInterface
     {
         return $this->getApplication($container);
-    }
-
-    public function boot(): Container
-    {
-        $container = $this->buildContainer();
-
-        $this->loadEnvironment($container);
-        $this->registerProviders($container);
-
-        return $container;
     }
 }
