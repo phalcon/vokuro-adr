@@ -24,6 +24,22 @@ use Vokuro\Tests\Support\Fake\FakeProfileRepository;
 final class SavePermissionsTest extends AbstractUnitTestCase
 {
     /**
+     * Unit Tests Vokuro\Domain\Permissions\SavePermissions :: clears the grants when none are checked
+     */
+    public function testClearsWhenNoneChecked(): void
+    {
+        $profiles = new FakeProfileRepository();
+        $profiles->seed(new Profile(1, 'Admins', true));
+
+        $permissions = new FakePermissionRepository();
+
+        $payload = (new SavePermissions($profiles, $permissions))(new Input(['profileId' => 1]));
+
+        $this->assertSame(Status::UPDATED, $payload->getStatus());
+        $this->assertSame(['profileId' => 1, 'pairs' => []], $permissions->replaced[0]);
+    }
+
+    /**
      * Unit Tests Vokuro\Domain\Permissions\SavePermissions :: reports a missing profile
      */
     public function testProfileNotFound(): void
@@ -54,21 +70,5 @@ final class SavePermissionsTest extends AbstractUnitTestCase
 
         $this->assertSame(Status::UPDATED, $payload->getStatus());
         $this->assertSame(['profileId' => 1, 'pairs' => ['users.index', 'users.edit']], $permissions->replaced[0]);
-    }
-
-    /**
-     * Unit Tests Vokuro\Domain\Permissions\SavePermissions :: clears the grants when none are checked
-     */
-    public function testClearsWhenNoneChecked(): void
-    {
-        $profiles = new FakeProfileRepository();
-        $profiles->seed(new Profile(1, 'Admins', true));
-
-        $permissions = new FakePermissionRepository();
-
-        $payload = (new SavePermissions($profiles, $permissions))(new Input(['profileId' => 1]));
-
-        $this->assertSame(Status::UPDATED, $payload->getStatus());
-        $this->assertSame(['profileId' => 1, 'pairs' => []], $permissions->replaced[0]);
     }
 }

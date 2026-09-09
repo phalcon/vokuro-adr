@@ -20,10 +20,10 @@ use Vokuro\Contracts\Repository\FailedLoginRepository;
  */
 final class FakeFailedLoginRepository implements FailedLoginRepository
 {
-    public int $recent = 0;
-
     /** @var array<int, array{userId: int|null, ipAddress: string}> */
     public array $added = [];
+
+    public int $recent = 0;
 
     public function add(?int $userId, string $ipAddress): void
     {

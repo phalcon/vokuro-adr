@@ -25,18 +25,6 @@ use Vokuro\Tests\Support\Fake\FakeUserRepository;
 final class ConfirmEmailTest extends AbstractUnitTestCase
 {
     /**
-     * Unit Tests Vokuro\Domain\Confirm\ConfirmEmail :: reports an unknown code
-     */
-    public function testUnknownCode(): void
-    {
-        $payload = (new ConfirmEmail(new FakeEmailConfirmationRepository(), new FakeUserRepository()))(
-            new Input(['code' => 'nope'])
-        );
-
-        $this->assertSame(Status::NOT_FOUND, $payload->getStatus());
-    }
-
-    /**
      * Unit Tests Vokuro\Domain\Confirm\ConfirmEmail :: refuses an already used code
      */
     public function testAlreadyConfirmed(): void
@@ -48,19 +36,6 @@ final class ConfirmEmailTest extends AbstractUnitTestCase
 
         $this->assertSame(Status::NOT_VALID, $payload->getStatus());
         $this->assertSame([], $confirmations->confirmed);
-    }
-
-    /**
-     * Unit Tests Vokuro\Domain\Confirm\ConfirmEmail :: reports a code whose user is gone
-     */
-    public function testUserGone(): void
-    {
-        $confirmations = new FakeEmailConfirmationRepository();
-        $confirmations->seed('code', new EmailConfirmation(1, 7, false));
-
-        $payload = (new ConfirmEmail($confirmations, new FakeUserRepository()))(new Input(['code' => 'code']));
-
-        $this->assertSame(Status::NOT_FOUND, $payload->getStatus());
     }
 
     /**
@@ -83,5 +58,30 @@ final class ConfirmEmailTest extends AbstractUnitTestCase
             ['id' => 7, 'name' => 'Kyle', 'email' => 'kyle@x.dev', 'profilesId' => 2, 'mustChangePassword' => true],
             $payload->getResult()
         );
+    }
+
+    /**
+     * Unit Tests Vokuro\Domain\Confirm\ConfirmEmail :: reports an unknown code
+     */
+    public function testUnknownCode(): void
+    {
+        $payload = (new ConfirmEmail(new FakeEmailConfirmationRepository(), new FakeUserRepository()))(
+            new Input(['code' => 'nope'])
+        );
+
+        $this->assertSame(Status::NOT_FOUND, $payload->getStatus());
+    }
+
+    /**
+     * Unit Tests Vokuro\Domain\Confirm\ConfirmEmail :: reports a code whose user is gone
+     */
+    public function testUserGone(): void
+    {
+        $confirmations = new FakeEmailConfirmationRepository();
+        $confirmations->seed('code', new EmailConfirmation(1, 7, false));
+
+        $payload = (new ConfirmEmail($confirmations, new FakeUserRepository()))(new Input(['code' => 'code']));
+
+        $this->assertSame(Status::NOT_FOUND, $payload->getStatus());
     }
 }

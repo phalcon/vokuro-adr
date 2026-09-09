@@ -33,20 +33,6 @@ final class ErrorPageResponderTest extends AbstractUnitTestCase
     }
 
     /**
-     * Unit Tests Vokuro\Responder\ErrorPageResponder :: renders the error page for a browser
-     */
-    public function testRendersErrorPageForHtml(): void
-    {
-        $renderer               = new FakeRenderer('ERROR PAGE');
-        $_SERVER['HTTP_ACCEPT'] = 'text/html,application/xhtml+xml';
-
-        $response = $this->responder($renderer)(new Request(), new Response(), Payload::error());
-
-        $this->assertSame('ERROR PAGE', $response->getContent());
-        $this->assertSame('errors/error', $renderer->calls[0]['path']);
-    }
-
-    /**
      * Unit Tests Vokuro\Responder\ErrorPageResponder :: keeps JSON for an API client
      */
     public function testKeepsJsonForApiClients(): void
@@ -58,6 +44,20 @@ final class ErrorPageResponderTest extends AbstractUnitTestCase
 
         $this->assertSame([], $renderer->calls);
         $this->assertStringContainsString('json', (string) $response->getHeaders()->get('Content-Type'));
+    }
+
+    /**
+     * Unit Tests Vokuro\Responder\ErrorPageResponder :: renders the error page for a browser
+     */
+    public function testRendersErrorPageForHtml(): void
+    {
+        $renderer               = new FakeRenderer('ERROR PAGE');
+        $_SERVER['HTTP_ACCEPT'] = 'text/html,application/xhtml+xml';
+
+        $response = $this->responder($renderer)(new Request(), new Response(), Payload::error());
+
+        $this->assertSame('ERROR PAGE', $response->getContent());
+        $this->assertSame('errors/error', $renderer->calls[0]['path']);
     }
 
     private function responder(FakeRenderer $renderer): ErrorPageResponder

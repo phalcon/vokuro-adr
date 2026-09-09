@@ -57,16 +57,19 @@ final class PostSessionLoginTest extends AbstractActionTestCase
     }
 
     /**
-     * Unit Tests Vokuro\Action\Session\Login\PostSessionLogin :: wrong credentials re-render and record a failure
+     * Unit Tests Vokuro\Action\Session\Login\PostSessionLogin :: remembering the sign in stores a token
      */
-    public function testWrongCredentialsRerenderAndRecord(): void
+    public function testRememberStoresToken(): void
     {
-        $request  = $this->request(['email' => 'sarah@x.dev', 'password' => 'wrong'], server: $this->clientServer());
-        $response = $this->action(new FakeCsrf())($request);
+        $this->seedUser('secret');
 
-        $this->assertSame('session/login', $this->renderer->calls[0]['path']);
-        $this->assertNotSame(302, $response->getStatusCode());
-        $this->assertCount(1, $this->failed->added);
+        $request = $this->request(
+            ['email' => 'sarah@x.dev', 'password' => 'secret', 'remember' => 'yes'],
+            server: $this->clientServer()
+        );
+        $this->action(new FakeCsrf())($request);
+
+        $this->assertCount(1, $this->tokens->added);
     }
 
     /**
@@ -86,19 +89,16 @@ final class PostSessionLoginTest extends AbstractActionTestCase
     }
 
     /**
-     * Unit Tests Vokuro\Action\Session\Login\PostSessionLogin :: remembering the sign in stores a token
+     * Unit Tests Vokuro\Action\Session\Login\PostSessionLogin :: wrong credentials re-render and record a failure
      */
-    public function testRememberStoresToken(): void
+    public function testWrongCredentialsRerenderAndRecord(): void
     {
-        $this->seedUser('secret');
+        $request  = $this->request(['email' => 'sarah@x.dev', 'password' => 'wrong'], server: $this->clientServer());
+        $response = $this->action(new FakeCsrf())($request);
 
-        $request = $this->request(
-            ['email' => 'sarah@x.dev', 'password' => 'secret', 'remember' => 'yes'],
-            server: $this->clientServer()
-        );
-        $this->action(new FakeCsrf())($request);
-
-        $this->assertCount(1, $this->tokens->added);
+        $this->assertSame('session/login', $this->renderer->calls[0]['path']);
+        $this->assertNotSame(302, $response->getStatusCode());
+        $this->assertCount(1, $this->failed->added);
     }
 
     private function action(Csrf $csrf): PostSessionLogin

@@ -33,11 +33,15 @@ final class CookiesTest extends AbstractUnitTestCase
     }
 
     /**
-     * Unit Tests Vokuro\Infrastructure\Http\Cookies :: reads a missing cookie as null
+     * Unit Tests Vokuro\Infrastructure\Http\Cookies :: delete clears the value from the jar
      */
-    public function testGetReturnsNullWhenAbsent(): void
+    public function testDeleteClearsTheJar(): void
     {
-        $this->assertNull((new Cookies())->get('missing'));
+        $_COOKIE['token'] = 'abc';
+
+        (new Cookies())->delete('token');
+
+        $this->assertArrayNotHasKey('token', $_COOKIE);
     }
 
     /**
@@ -51,6 +55,14 @@ final class CookiesTest extends AbstractUnitTestCase
     }
 
     /**
+     * Unit Tests Vokuro\Infrastructure\Http\Cookies :: reads a missing cookie as null
+     */
+    public function testGetReturnsNullWhenAbsent(): void
+    {
+        $this->assertNull((new Cookies())->get('missing'));
+    }
+
+    /**
      * Unit Tests Vokuro\Infrastructure\Http\Cookies :: set writes the value to the jar
      */
     public function testSetWritesTheJar(): void
@@ -58,17 +70,5 @@ final class CookiesTest extends AbstractUnitTestCase
         (new Cookies())->set('token', 'abc', 123);
 
         $this->assertSame('abc', $_COOKIE['token']);
-    }
-
-    /**
-     * Unit Tests Vokuro\Infrastructure\Http\Cookies :: delete clears the value from the jar
-     */
-    public function testDeleteClearsTheJar(): void
-    {
-        $_COOKIE['token'] = 'abc';
-
-        (new Cookies())->delete('token');
-
-        $this->assertArrayNotHasKey('token', $_COOKIE);
     }
 }

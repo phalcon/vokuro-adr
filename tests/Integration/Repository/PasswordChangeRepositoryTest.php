@@ -40,6 +40,14 @@ final class PasswordChangeRepositoryTest extends AbstractIntegrationTestCase
     }
 
     /**
+     * Integration Tests Vokuro\Infrastructure\Repository\PasswordChangeRepository :: forUser is empty for an unknown user
+     */
+    public function testForUserEmpty(): void
+    {
+        $this->assertCount(0, $this->repository->forUser(999));
+    }
+
+    /**
      * Integration Tests Vokuro\Infrastructure\Repository\PasswordChangeRepository :: forUser returns the user's records
      */
     public function testForUserReturnsCollection(): void
@@ -49,14 +57,6 @@ final class PasswordChangeRepositoryTest extends AbstractIntegrationTestCase
         $this->seedChange(9);
 
         $this->assertCount(2, $this->repository->forUser(7));
-    }
-
-    /**
-     * Integration Tests Vokuro\Infrastructure\Repository\PasswordChangeRepository :: forUser is empty for an unknown user
-     */
-    public function testForUserEmpty(): void
-    {
-        $this->assertCount(0, $this->repository->forUser(999));
     }
 
     private function seedChange(int $userId): int

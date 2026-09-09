@@ -63,7 +63,7 @@ final class PasswordChangeRepository implements PasswordChangeRepositoryInterfac
 
         return new PasswordChangeCollection(
             array_map(
-                fn(array $row): PasswordChange => new PasswordChange(
+                fn (array $row): PasswordChange => new PasswordChange(
                     id: (int) $row['id'],
                     ipAddress: (string) $row['ipAddress'],
                     userAgent: (string) $row['userAgent'],

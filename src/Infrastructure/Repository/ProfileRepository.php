@@ -27,6 +27,7 @@ use Vokuro\Domain\Page;
 final class ProfileRepository implements ProfileRepositoryInterface
 {
     private const COLUMNS = ['id', 'name', 'active'];
+
     private const ID_FIELD = 'id = ';
 
     public function __construct(
@@ -121,7 +122,7 @@ final class ProfileRepository implements ProfileRepositoryInterface
             $select->getStatement(),
             $select->getBindValues()
         );
-        $profiles = array_map(fn(array $row): Profile => $this->hydrate($row), $rows);
+        $profiles = array_map(fn (array $row): Profile => $this->hydrate($row), $rows);
 
         return new Page(new ProfileCollection($profiles), $current, $last, $total);
     }

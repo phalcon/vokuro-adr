@@ -62,7 +62,7 @@ final class SuccessLoginRepository implements SuccessLoginRepositoryInterface
 
         return new SuccessLoginCollection(
             array_map(
-                fn(array $row): SuccessLogin => new SuccessLogin(
+                fn (array $row): SuccessLogin => new SuccessLogin(
                     id: (int) $row['id'],
                     ipAddress: (string) $row['ipAddress'],
                     userAgent: (string) $row['userAgent']

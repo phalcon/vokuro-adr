@@ -40,6 +40,21 @@ final class RememberTokenRepositoryTest extends AbstractIntegrationTestCase
     }
 
     /**
+     * Integration Tests Vokuro\Infrastructure\Repository\RememberTokenRepository :: deleteForUser drops only that user's tokens
+     */
+    public function testDeleteForUser(): void
+    {
+        $this->seedToken(7, 'hash-a');
+        $this->seedToken(7, 'hash-b');
+        $this->seedToken(9, 'hash-c');
+
+        $this->repository->deleteForUser(7);
+
+        $this->assertNull($this->repository->findUserByToken('hash-a'));
+        $this->assertSame(9, $this->repository->findUserByToken('hash-c'));
+    }
+
+    /**
      * Integration Tests Vokuro\Infrastructure\Repository\RememberTokenRepository :: findUserByToken resolves the owner
      */
     public function testFindUserByToken(): void
@@ -55,21 +70,6 @@ final class RememberTokenRepositoryTest extends AbstractIntegrationTestCase
     public function testFindUserByTokenMissingIsNull(): void
     {
         $this->assertNull($this->repository->findUserByToken('nope'));
-    }
-
-    /**
-     * Integration Tests Vokuro\Infrastructure\Repository\RememberTokenRepository :: deleteForUser drops only that user's tokens
-     */
-    public function testDeleteForUser(): void
-    {
-        $this->seedToken(7, 'hash-a');
-        $this->seedToken(7, 'hash-b');
-        $this->seedToken(9, 'hash-c');
-
-        $this->repository->deleteForUser(7);
-
-        $this->assertNull($this->repository->findUserByToken('hash-a'));
-        $this->assertSame(9, $this->repository->findUserByToken('hash-c'));
     }
 
     private function seedToken(int $userId, string $token): int

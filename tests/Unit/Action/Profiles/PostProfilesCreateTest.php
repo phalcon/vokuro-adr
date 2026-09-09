@@ -43,17 +43,6 @@ final class PostProfilesCreateTest extends AbstractActionTestCase
     }
 
     /**
-     * Unit Tests Vokuro\Action\Profiles\Create\PostProfilesCreate :: an invalid submission re-renders the form
-     */
-    public function testInvalidRerendersForm(): void
-    {
-        $this->action(new FakeCsrf())($this->request(['name' => '', 'active' => 'Y']));
-
-        $this->assertSame('profiles/create', $this->renderer->calls[0]['path']);
-        $this->assertSame([], $this->profiles->added);
-    }
-
-    /**
      * Unit Tests Vokuro\Action\Profiles\Create\PostProfilesCreate :: a valid submission creates and redirects
      */
     public function testCreatesAndRedirects(): void
@@ -63,6 +52,17 @@ final class PostProfilesCreateTest extends AbstractActionTestCase
         $this->assertSame(302, $response->getStatusCode());
         $this->assertSame('/profiles', $response->getHeaders()->get('Location'));
         $this->assertCount(1, $this->profiles->added);
+    }
+
+    /**
+     * Unit Tests Vokuro\Action\Profiles\Create\PostProfilesCreate :: an invalid submission re-renders the form
+     */
+    public function testInvalidRerendersForm(): void
+    {
+        $this->action(new FakeCsrf())($this->request(['name' => '', 'active' => 'Y']));
+
+        $this->assertSame('profiles/create', $this->renderer->calls[0]['path']);
+        $this->assertSame([], $this->profiles->added);
     }
 
     private function action(Csrf $csrf): PostProfilesCreate

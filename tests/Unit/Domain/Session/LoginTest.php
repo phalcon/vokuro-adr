@@ -34,24 +34,13 @@ final class LoginTest extends AbstractUnitTestCase
     }
 
     /**
-     * Unit Tests Vokuro\Domain\Session\Login :: rejects empty credentials
+     * Unit Tests Vokuro\Domain\Session\Login :: refuses a banned account
      */
-    public function testEmptyCredentials(): void
+    public function testBanned(): void
     {
-        $payload = $this->login()(new Input(['email' => '', 'password' => '']));
+        $users = (new FakeUserRepository())->seed($this->user('secret', banned: true));
 
-        $this->assertSame(Status::NOT_VALID, $payload->getStatus());
-    }
-
-    /**
-     * Unit Tests Vokuro\Domain\Session\Login :: blocks an address over the throttle limit
-     */
-    public function testThrottled(): void
-    {
-        $failed         = new FakeFailedLoginRepository();
-        $failed->recent = 5;
-
-        $payload = $this->login(failed: $failed)(
+        $payload = $this->login($users)(
             new Input(['email' => 'x@x.dev', 'password' => 'secret', 'ipAddress' => 'ip'])
         );
 
@@ -59,35 +48,13 @@ final class LoginTest extends AbstractUnitTestCase
     }
 
     /**
-     * Unit Tests Vokuro\Domain\Session\Login :: records and rejects a wrong password
+     * Unit Tests Vokuro\Domain\Session\Login :: rejects empty credentials
      */
-    public function testWrongPassword(): void
+    public function testEmptyCredentials(): void
     {
-        $users = (new FakeUserRepository())->seed($this->user('secret'));
+        $payload = $this->login()(new Input(['email' => '', 'password' => '']));
 
-        $failed = new FakeFailedLoginRepository();
-
-        $payload = $this->login($users, failed: $failed)(
-            new Input(['email' => 'x@x.dev', 'password' => 'wrong', 'ipAddress' => 'ip'])
-        );
-
-        $this->assertSame(Status::NOT_AUTHENTICATED, $payload->getStatus());
-        $this->assertSame(['userId' => 7, 'ipAddress' => 'ip'], $failed->added[0]);
-    }
-
-    /**
-     * Unit Tests Vokuro\Domain\Session\Login :: records a failure for an unknown address
-     */
-    public function testUnknownEmail(): void
-    {
-        $failed = new FakeFailedLoginRepository();
-
-        $payload = $this->login(new FakeUserRepository(), failed: $failed)(
-            new Input(['email' => 'x@x.dev', 'password' => 'secret', 'ipAddress' => 'ip'])
-        );
-
-        $this->assertSame(Status::NOT_AUTHENTICATED, $payload->getStatus());
-        $this->assertSame(['userId' => null, 'ipAddress' => 'ip'], $failed->added[0]);
+        $this->assertSame(Status::NOT_VALID, $payload->getStatus());
     }
 
     /**
@@ -102,20 +69,6 @@ final class LoginTest extends AbstractUnitTestCase
         );
 
         $this->assertSame(Status::NOT_AUTHENTICATED, $payload->getStatus());
-    }
-
-    /**
-     * Unit Tests Vokuro\Domain\Session\Login :: refuses a banned account
-     */
-    public function testBanned(): void
-    {
-        $users = (new FakeUserRepository())->seed($this->user('secret', banned: true));
-
-        $payload = $this->login($users)(
-            new Input(['email' => 'x@x.dev', 'password' => 'secret', 'ipAddress' => 'ip'])
-        );
-
-        $this->assertSame(Status::NOT_AUTHORIZED, $payload->getStatus());
     }
 
     /**
@@ -136,6 +89,53 @@ final class LoginTest extends AbstractUnitTestCase
             ['id' => 7, 'name' => 'Sarah', 'email' => 'x@x.dev', 'profilesId' => 2],
             $payload->getResult()
         );
+    }
+
+    /**
+     * Unit Tests Vokuro\Domain\Session\Login :: blocks an address over the throttle limit
+     */
+    public function testThrottled(): void
+    {
+        $failed         = new FakeFailedLoginRepository();
+        $failed->recent = 5;
+
+        $payload = $this->login(failed: $failed)(
+            new Input(['email' => 'x@x.dev', 'password' => 'secret', 'ipAddress' => 'ip'])
+        );
+
+        $this->assertSame(Status::NOT_AUTHORIZED, $payload->getStatus());
+    }
+
+    /**
+     * Unit Tests Vokuro\Domain\Session\Login :: records a failure for an unknown address
+     */
+    public function testUnknownEmail(): void
+    {
+        $failed = new FakeFailedLoginRepository();
+
+        $payload = $this->login(new FakeUserRepository(), failed: $failed)(
+            new Input(['email' => 'x@x.dev', 'password' => 'secret', 'ipAddress' => 'ip'])
+        );
+
+        $this->assertSame(Status::NOT_AUTHENTICATED, $payload->getStatus());
+        $this->assertSame(['userId' => null, 'ipAddress' => 'ip'], $failed->added[0]);
+    }
+
+    /**
+     * Unit Tests Vokuro\Domain\Session\Login :: records and rejects a wrong password
+     */
+    public function testWrongPassword(): void
+    {
+        $users = (new FakeUserRepository())->seed($this->user('secret'));
+
+        $failed = new FakeFailedLoginRepository();
+
+        $payload = $this->login($users, failed: $failed)(
+            new Input(['email' => 'x@x.dev', 'password' => 'wrong', 'ipAddress' => 'ip'])
+        );
+
+        $this->assertSame(Status::NOT_AUTHENTICATED, $payload->getStatus());
+        $this->assertSame(['userId' => 7, 'ipAddress' => 'ip'], $failed->added[0]);
     }
 
     private function login(

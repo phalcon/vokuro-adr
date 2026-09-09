@@ -43,6 +43,18 @@ final class ProfileRepositoryTest extends AbstractIntegrationTestCase
     }
 
     /**
+     * Integration Tests Vokuro\Infrastructure\Repository\ProfileRepository :: delete removes the row
+     */
+    public function testDelete(): void
+    {
+        $id = $this->insert('profiles', ['name' => 'Admins', 'active' => 'Y']);
+
+        $this->repository->delete($id);
+
+        $this->assertSame([], $this->connection->fetchOne('SELECT id FROM profiles WHERE id = ' . $id));
+    }
+
+    /**
      * Integration Tests Vokuro\Infrastructure\Repository\ProfileRepository :: findById hydrates a profile
      */
     public function testFindByIdHydrates(): void
@@ -63,32 +75,6 @@ final class ProfileRepositoryTest extends AbstractIntegrationTestCase
     public function testFindByIdMissingIsNull(): void
     {
         $this->assertNull($this->repository->findById(999));
-    }
-
-    /**
-     * Integration Tests Vokuro\Infrastructure\Repository\ProfileRepository :: update writes the fields
-     */
-    public function testUpdate(): void
-    {
-        $id = $this->insert('profiles', ['name' => 'Admins', 'active' => 'Y']);
-
-        $this->repository->update($id, ['name' => 'Managers', 'active' => 'N']);
-
-        $row = $this->connection->fetchOne('SELECT name, active FROM profiles WHERE id = ' . $id);
-        $this->assertSame('Managers', $row['name']);
-        $this->assertSame('N', $row['active']);
-    }
-
-    /**
-     * Integration Tests Vokuro\Infrastructure\Repository\ProfileRepository :: delete removes the row
-     */
-    public function testDelete(): void
-    {
-        $id = $this->insert('profiles', ['name' => 'Admins', 'active' => 'Y']);
-
-        $this->repository->delete($id);
-
-        $this->assertSame([], $this->connection->fetchOne('SELECT id FROM profiles WHERE id = ' . $id));
     }
 
     /**
@@ -116,5 +102,19 @@ final class ProfileRepositoryTest extends AbstractIntegrationTestCase
         $this->assertSame(1, $page->total);
         $this->assertCount(1, $page->items);
         $this->assertSame(1, $this->repository->page(1, 10, ['id' => 1])->total);
+    }
+
+    /**
+     * Integration Tests Vokuro\Infrastructure\Repository\ProfileRepository :: update writes the fields
+     */
+    public function testUpdate(): void
+    {
+        $id = $this->insert('profiles', ['name' => 'Admins', 'active' => 'Y']);
+
+        $this->repository->update($id, ['name' => 'Managers', 'active' => 'N']);
+
+        $row = $this->connection->fetchOne('SELECT name, active FROM profiles WHERE id = ' . $id);
+        $this->assertSame('Managers', $row['name']);
+        $this->assertSame('N', $row['active']);
     }
 }

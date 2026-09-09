@@ -71,7 +71,7 @@ final class UserRepository implements UserRepositoryInterface
         );
 
         return new UserCollection(
-            array_map(fn(array $row): User => $this->hydrate($row), $rows)
+            array_map(fn (array $row): User => $this->hydrate($row), $rows)
         );
     }
 
@@ -141,7 +141,7 @@ final class UserRepository implements UserRepositoryInterface
             $select->getStatement(),
             $select->getBindValues()
         );
-        $users = array_map(fn(array $row): User => $this->hydrate($row), $rows);
+        $users = array_map(fn (array $row): User => $this->hydrate($row), $rows);
 
         return new Page(new UserCollection($users), $current, $last, $total);
     }

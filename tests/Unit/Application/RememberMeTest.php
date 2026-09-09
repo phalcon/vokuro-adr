@@ -23,38 +23,18 @@ use Vokuro\Tests\Support\Fake\FakeUserRepository;
 final class RememberMeTest extends AbstractUnitTestCase
 {
     /**
-     * Unit Tests Vokuro\Application\RememberMe :: stores a hashed token and sets the cookies
+     * Unit Tests Vokuro\Application\RememberMe :: forget drops the token and the cookies
      */
-    public function testRememberStoresHashedTokenAndCookies(): void
+    public function testForget(): void
     {
-        $tokens  = new FakeRememberTokenRepository();
-        $cookies = new FakeCookies();
+        $tokens  = (new FakeRememberTokenRepository())->seed(hash('sha256', 'raw'), 7);
+        $cookies = (new FakeCookies())->seed('RMU', '7')->seed('RMT', 'raw');
 
-        (new RememberMe($tokens, new FakeUserRepository(), $cookies))->remember(7, 'agent');
+        (new RememberMe($tokens, new FakeUserRepository(), $cookies))->forget(7);
 
-        $this->assertSame(7, $tokens->added[0]['userId']);
-        $this->assertSame('agent', $tokens->added[0]['userAgent']);
-        $this->assertSame(64, strlen($tokens->added[0]['tokenHash']));
-        $this->assertArrayHasKey('RMU', $cookies->jar);
-        $this->assertArrayHasKey('RMT', $cookies->jar);
-    }
-
-    /**
-     * Unit Tests Vokuro\Application\RememberMe :: recalls a valid cookie into an identity
-     */
-    public function testRecallReturnsIdentity(): void
-    {
-        $raw = 'raw-token';
-
-        $tokens = (new FakeRememberTokenRepository())->seed(hash('sha256', $raw), 7);
-        $users  = (new FakeUserRepository())->seed($this->user());
-
-        $auth = (new RememberMe($tokens, $users, $this->cookies('7', $raw)))->recall();
-
-        $this->assertSame(
-            ['id' => 7, 'name' => 'Sarah', 'email' => 's@x.dev', 'profilesId' => 2],
-            $auth
-        );
+        $this->assertSame([7], $tokens->deleted);
+        $this->assertContains('RMU', $cookies->deleted);
+        $this->assertContains('RMT', $cookies->deleted);
     }
 
     /**
@@ -82,18 +62,38 @@ final class RememberMeTest extends AbstractUnitTestCase
     }
 
     /**
-     * Unit Tests Vokuro\Application\RememberMe :: forget drops the token and the cookies
+     * Unit Tests Vokuro\Application\RememberMe :: recalls a valid cookie into an identity
      */
-    public function testForget(): void
+    public function testRecallReturnsIdentity(): void
     {
-        $tokens  = (new FakeRememberTokenRepository())->seed(hash('sha256', 'raw'), 7);
-        $cookies = (new FakeCookies())->seed('RMU', '7')->seed('RMT', 'raw');
+        $raw = 'raw-token';
 
-        (new RememberMe($tokens, new FakeUserRepository(), $cookies))->forget(7);
+        $tokens = (new FakeRememberTokenRepository())->seed(hash('sha256', $raw), 7);
+        $users  = (new FakeUserRepository())->seed($this->user());
 
-        $this->assertSame([7], $tokens->deleted);
-        $this->assertContains('RMU', $cookies->deleted);
-        $this->assertContains('RMT', $cookies->deleted);
+        $auth = (new RememberMe($tokens, $users, $this->cookies('7', $raw)))->recall();
+
+        $this->assertSame(
+            ['id' => 7, 'name' => 'Sarah', 'email' => 's@x.dev', 'profilesId' => 2],
+            $auth
+        );
+    }
+
+    /**
+     * Unit Tests Vokuro\Application\RememberMe :: stores a hashed token and sets the cookies
+     */
+    public function testRememberStoresHashedTokenAndCookies(): void
+    {
+        $tokens  = new FakeRememberTokenRepository();
+        $cookies = new FakeCookies();
+
+        (new RememberMe($tokens, new FakeUserRepository(), $cookies))->remember(7, 'agent');
+
+        $this->assertSame(7, $tokens->added[0]['userId']);
+        $this->assertSame('agent', $tokens->added[0]['userAgent']);
+        $this->assertSame(64, strlen($tokens->added[0]['tokenHash']));
+        $this->assertArrayHasKey('RMU', $cookies->jar);
+        $this->assertArrayHasKey('RMT', $cookies->jar);
     }
 
     private function cookies(string $user, string $token): FakeCookies

@@ -28,29 +28,6 @@ use Vokuro\Domain\Model\User;
 final class CollectionsTest extends AbstractUnitTestCase
 {
     /**
-     * Unit Tests Vokuro\Domain\Collection\UserCollection :: keys by id and iterates
-     */
-    public function testUserCollectionKeysById(): void
-    {
-        $one = $this->user(1);
-        $two = $this->user(2);
-
-        $collection = new UserCollection([$one, $two]);
-
-        $this->assertCount(2, $collection);
-        $this->assertFalse($collection->isEmpty());
-        $this->assertSame($one, $collection->get('1'));
-        $this->assertSame($two, $collection->get('2'));
-
-        $seen = [];
-        foreach ($collection as $user) {
-            $seen[] = $user->id;
-        }
-
-        $this->assertSame([1, 2], $seen);
-    }
-
-    /**
      * Unit Tests Vokuro\Domain\Collection\UserCollection :: is empty when built empty
      */
     public function testEmptyCollection(): void
@@ -76,6 +53,29 @@ final class CollectionsTest extends AbstractUnitTestCase
         $this->assertInstanceOf(PasswordChange::class, $changes->get('5'));
         $this->assertCount(1, $resets);
         $this->assertInstanceOf(ResetPassword::class, $resets->get('6'));
+    }
+
+    /**
+     * Unit Tests Vokuro\Domain\Collection\UserCollection :: keys by id and iterates
+     */
+    public function testUserCollectionKeysById(): void
+    {
+        $one = $this->user(1);
+        $two = $this->user(2);
+
+        $collection = new UserCollection([$one, $two]);
+
+        $this->assertCount(2, $collection);
+        $this->assertFalse($collection->isEmpty());
+        $this->assertSame($one, $collection->get('1'));
+        $this->assertSame($two, $collection->get('2'));
+
+        $seen = [];
+        foreach ($collection as $user) {
+            $seen[] = $user->id;
+        }
+
+        $this->assertSame([1, 2], $seen);
     }
 
     private function user(int $id): User

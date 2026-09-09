@@ -31,13 +31,6 @@ final class FakeResetPasswordRepository implements ResetPasswordRepository
     /** @var array<int, int> */
     public array $spent = [];
 
-    public function seed(string $code, ResetPassword $reset): self
-    {
-        $this->byCode[$code] = $reset;
-
-        return $this;
-    }
-
     public function add(int $userId, string $code): string
     {
         $this->added[] = ['userId' => $userId, 'code' => $code];
@@ -58,5 +51,12 @@ final class FakeResetPasswordRepository implements ResetPasswordRepository
     public function markReset(int $id): void
     {
         $this->spent[] = $id;
+    }
+
+    public function seed(string $code, ResetPassword $reset): self
+    {
+        $this->byCode[$code] = $reset;
+
+        return $this;
     }
 }

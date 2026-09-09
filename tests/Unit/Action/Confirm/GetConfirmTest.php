@@ -24,19 +24,6 @@ use Vokuro\Tests\Unit\Action\AbstractActionTestCase;
 final class GetConfirmTest extends AbstractActionTestCase
 {
     /**
-     * Unit Tests Vokuro\Action\Confirm\GetConfirm :: an unknown code goes home
-     */
-    public function testUnknownCodeRedirectsHome(): void
-    {
-        $response = $this->action(new FakeEmailConfirmationRepository(), new FakeUserRepository())(
-            $this->request(attributes: ['code' => 'nope'])
-        );
-
-        $this->assertSame(302, $response->getStatusCode());
-        $this->assertSame('/', $response->getHeaders()->get('Location'));
-    }
-
-    /**
      * Unit Tests Vokuro\Action\Confirm\GetConfirm :: an already used code goes to the login form
      */
     public function testAlreadyConfirmedRedirectsToLogin(): void
@@ -76,6 +63,19 @@ final class GetConfirmTest extends AbstractActionTestCase
         )($this->request(attributes: ['code' => 'code']));
 
         $this->assertSame('/users', $response->getHeaders()->get('Location'));
+    }
+
+    /**
+     * Unit Tests Vokuro\Action\Confirm\GetConfirm :: an unknown code goes home
+     */
+    public function testUnknownCodeRedirectsHome(): void
+    {
+        $response = $this->action(new FakeEmailConfirmationRepository(), new FakeUserRepository())(
+            $this->request(attributes: ['code' => 'nope'])
+        );
+
+        $this->assertSame(302, $response->getStatusCode());
+        $this->assertSame('/', $response->getHeaders()->get('Location'));
     }
 
     private function action(

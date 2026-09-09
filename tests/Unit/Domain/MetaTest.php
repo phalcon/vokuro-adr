@@ -19,17 +19,6 @@ use Vokuro\Domain\Meta;
 final class MetaTest extends AbstractUnitTestCase
 {
     /**
-     * Unit Tests Vokuro\Domain\Meta :: defaults to the least privileged state
-     */
-    public function testFailsClosedByDefault(): void
-    {
-        $meta = new Meta();
-
-        $this->assertFalse($meta->isLoggedIn);
-        $this->assertSame('', $meta->name);
-    }
-
-    /**
      * Unit Tests Vokuro\Domain\Meta :: carries the signed in identity
      */
     public function testCarriesTheSignedInUser(): void
@@ -38,5 +27,16 @@ final class MetaTest extends AbstractUnitTestCase
 
         $this->assertTrue($meta->isLoggedIn);
         $this->assertSame('Sarah Connor', $meta->name);
+    }
+
+    /**
+     * Unit Tests Vokuro\Domain\Meta :: defaults to the least privileged state
+     */
+    public function testFailsClosedByDefault(): void
+    {
+        $meta = new Meta();
+
+        $this->assertFalse($meta->isLoggedIn);
+        $this->assertSame('', $meta->name);
     }
 }

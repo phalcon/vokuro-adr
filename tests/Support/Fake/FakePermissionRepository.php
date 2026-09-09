@@ -20,11 +20,11 @@ use Vokuro\Contracts\Repository\PermissionRepository;
  */
 final class FakePermissionRepository implements PermissionRepository
 {
-    /** @var array<int, array<string, bool>> */
-    public array $grants = [];
-
     /** @var array<int, int> */
     public array $grantedCalls = [];
+
+    /** @var array<int, array<string, bool>> */
+    public array $grants = [];
 
     /** @var array<int, array{profileId: int, pairs: array<int, string>}> */
     public array $replaced = [];
@@ -50,7 +50,7 @@ final class FakePermissionRepository implements PermissionRepository
 
     public function replaceForProfile(int $profileId, array $pairs): void
     {
-        $this->replaced[] = ['profileId' => $profileId, 'pairs' => $pairs];
+        $this->replaced[]         = ['profileId' => $profileId, 'pairs' => $pairs];
         $this->grants[$profileId] = [];
         foreach ($pairs as $pair) {
             $this->grants[$profileId][$pair] = true;

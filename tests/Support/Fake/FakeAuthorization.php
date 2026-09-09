@@ -20,11 +20,11 @@ use Vokuro\Contracts\Authorization;
  */
 final class FakeAuthorization implements Authorization
 {
-    /** @var array<string, bool> */
-    public array $granted = [];
-
     /** @var array<int, array{profileId: int, resource: string, action: string}> */
     public array $asked = [];
+
+    /** @var array<string, bool> */
+    public array $granted = [];
 
     public function allow(int $profileId, string $resource, string $action): self
     {

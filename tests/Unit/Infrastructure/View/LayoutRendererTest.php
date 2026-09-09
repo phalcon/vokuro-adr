@@ -44,18 +44,6 @@ final class LayoutRendererTest extends AbstractUnitTestCase
     }
 
     /**
-     * Unit Tests Vokuro\Infrastructure\View\LayoutRenderer :: a payload's own Meta wins
-     */
-    public function testPayloadMetaWinsOverTheSession(): void
-    {
-        $session = new FakeSession();
-
-        $html = $this->renderer($session, '/')->render('probe', ['extras' => new Meta(true, 'Override')]);
-
-        $this->assertSame('LAYOUT[index]PAGE[1|Override]', $html);
-    }
-
-    /**
      * Unit Tests Vokuro\Infrastructure\View\LayoutRenderer :: a guest renders the least privileged Meta
      */
     public function testGuestRendersClosed(): void
@@ -65,6 +53,18 @@ final class LayoutRendererTest extends AbstractUnitTestCase
         $html = $this->renderer($session, '/profiles')->render('probe');
 
         $this->assertSame('LAYOUT[profiles]PAGE[0|]', $html);
+    }
+
+    /**
+     * Unit Tests Vokuro\Infrastructure\View\LayoutRenderer :: a payload's own Meta wins
+     */
+    public function testPayloadMetaWinsOverTheSession(): void
+    {
+        $session = new FakeSession();
+
+        $html = $this->renderer($session, '/')->render('probe', ['extras' => new Meta(true, 'Override')]);
+
+        $this->assertSame('LAYOUT[index]PAGE[1|Override]', $html);
     }
 
     private function renderer(FakeSession $session, string $uri): LayoutRenderer

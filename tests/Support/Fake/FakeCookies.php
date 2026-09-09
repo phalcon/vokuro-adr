@@ -20,18 +20,11 @@ use Vokuro\Contracts\Cookies;
  */
 final class FakeCookies implements Cookies
 {
-    /** @var array<string, string> */
-    public array $jar = [];
-
     /** @var array<int, string> */
     public array $deleted = [];
 
-    public function seed(string $name, string $value): self
-    {
-        $this->jar[$name] = $value;
-
-        return $this;
-    }
+    /** @var array<string, string> */
+    public array $jar = [];
 
     public function delete(string $name): void
     {
@@ -42,6 +35,13 @@ final class FakeCookies implements Cookies
     public function get(string $name): ?string
     {
         return $this->jar[$name] ?? null;
+    }
+
+    public function seed(string $name, string $value): self
+    {
+        $this->jar[$name] = $value;
+
+        return $this;
     }
 
     public function set(string $name, string $value, int $expires): void

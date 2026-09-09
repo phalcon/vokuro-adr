@@ -19,6 +19,18 @@ use Vokuro\Application\Acl;
 final class AclTest extends AbstractUnitTestCase
 {
     /**
+     * Unit Tests Vokuro\Application\Acl :: describes an action, falling back to its name
+     */
+    public function testActionDescription(): void
+    {
+        $acl = new Acl();
+
+        $this->assertSame('Access', $acl->actionDescription('index'));
+        $this->assertSame('Change password', $acl->actionDescription('changePassword'));
+        $this->assertSame('unknown', $acl->actionDescription('unknown'));
+    }
+
+    /**
      * Unit Tests Vokuro\Application\Acl :: lists the resources and their actions
      */
     public function testResources(): void
@@ -30,17 +42,5 @@ final class AclTest extends AbstractUnitTestCase
         $this->assertArrayHasKey('permissions', $resources);
         $this->assertContains('delete', $resources['users']);
         $this->assertContains('index', $resources['permissions']);
-    }
-
-    /**
-     * Unit Tests Vokuro\Application\Acl :: describes an action, falling back to its name
-     */
-    public function testActionDescription(): void
-    {
-        $acl = new Acl();
-
-        $this->assertSame('Access', $acl->actionDescription('index'));
-        $this->assertSame('Change password', $acl->actionDescription('changePassword'));
-        $this->assertSame('unknown', $acl->actionDescription('unknown'));
     }
 }

@@ -26,6 +26,24 @@ use Vokuro\Action\Users\ChangePassword\GetUsersChangePassword;
 final class RenderOnlyGetTest extends AbstractActionTestCase
 {
     /**
+     * @return array<string, array{0: class-string, 1: string, 2: string}>
+     */
+    public static function actionProvider(): array
+    {
+        return [
+            'home'            => [Get::class, 'view', 'index/index'],
+            'about'           => [GetAbout::class, 'view', 'about/index'],
+            'privacy'         => [GetPrivacy::class, 'view', 'privacy/index'],
+            'terms'           => [GetTerms::class, 'view', 'terms/index'],
+            'login form'      => [GetSessionLogin::class, 'auth', 'session/login'],
+            'signup form'     => [GetSessionSignup::class, 'auth', 'session/signup'],
+            'forgot form'     => [GetSessionForgotPassword::class, 'auth', 'session/forgotPassword'],
+            'profile create'  => [GetProfilesCreate::class, 'private', 'profiles/create'],
+            'change password' => [GetUsersChangePassword::class, 'private', 'users/changePassword'],
+        ];
+    }
+
+    /**
      * Unit Tests render-only GET actions :: each renders its template with a 200
      *
      * @dataProvider actionProvider
@@ -44,23 +62,5 @@ final class RenderOnlyGetTest extends AbstractActionTestCase
 
         $this->assertSame($template, $this->renderer->calls[0]['path']);
         $this->assertSame(200, $response->getStatusCode());
-    }
-
-    /**
-     * @return array<string, array{0: class-string, 1: string, 2: string}>
-     */
-    public static function actionProvider(): array
-    {
-        return [
-            'home'            => [Get::class, 'view', 'index/index'],
-            'about'           => [GetAbout::class, 'view', 'about/index'],
-            'privacy'         => [GetPrivacy::class, 'view', 'privacy/index'],
-            'terms'           => [GetTerms::class, 'view', 'terms/index'],
-            'login form'      => [GetSessionLogin::class, 'auth', 'session/login'],
-            'signup form'     => [GetSessionSignup::class, 'auth', 'session/signup'],
-            'forgot form'     => [GetSessionForgotPassword::class, 'auth', 'session/forgotPassword'],
-            'profile create'  => [GetProfilesCreate::class, 'private', 'profiles/create'],
-            'change password' => [GetUsersChangePassword::class, 'private', 'users/changePassword'],
-        ];
     }
 }

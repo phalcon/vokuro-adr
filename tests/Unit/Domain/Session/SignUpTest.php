@@ -26,6 +26,23 @@ use Vokuro\Tests\Support\Fake\FakeUserRepository;
 final class SignUpTest extends AbstractUnitTestCase
 {
     /**
+     * @return array<string, array{0: array<string, string>, 1: string, 2?: bool}>
+     */
+    public static function invalidProvider(): array
+    {
+        return [
+            'empty name'         => [['name' => ''], 'name'],
+            'empty email'        => [['email' => ''], 'email'],
+            'invalid email'      => [['email' => 'nope'], 'email'],
+            'duplicate email'    => [[], 'email', true],
+            'empty password'     => [['password' => '', 'confirmPassword' => ''], 'password'],
+            'short password'     => [['password' => 'short', 'confirmPassword' => 'short'], 'password'],
+            'mismatch password'  => [['confirmPassword' => 'different'], 'confirmPassword'],
+            'terms not accepted' => [['terms' => ''], 'terms'],
+        ];
+    }
+
+    /**
      * Unit Tests Vokuro\Domain\Session\SignUp :: creates the account, confirmation and mail
      */
     public function testCreatesConfirmationAndMails(): void
@@ -68,23 +85,6 @@ final class SignUpTest extends AbstractUnitTestCase
         $this->assertSame(Status::NOT_VALID, $payload->getStatus());
         $this->assertArrayHasKey($field, (array) $payload->getMessages());
         $this->assertSame([], $users->added);
-    }
-
-    /**
-     * @return array<string, array{0: array<string, string>, 1: string, 2?: bool}>
-     */
-    public static function invalidProvider(): array
-    {
-        return [
-            'empty name'         => [['name' => ''], 'name'],
-            'empty email'        => [['email' => ''], 'email'],
-            'invalid email'      => [['email' => 'nope'], 'email'],
-            'duplicate email'    => [[], 'email', true],
-            'empty password'     => [['password' => '', 'confirmPassword' => ''], 'password'],
-            'short password'     => [['password' => 'short', 'confirmPassword' => 'short'], 'password'],
-            'mismatch password'  => [['confirmPassword' => 'different'], 'confirmPassword'],
-            'terms not accepted' => [['terms' => ''], 'terms'],
-        ];
     }
 
     /**

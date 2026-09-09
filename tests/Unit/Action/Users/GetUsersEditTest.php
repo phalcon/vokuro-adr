@@ -25,6 +25,17 @@ use Vokuro\Tests\Unit\Action\AbstractActionTestCase;
 final class GetUsersEditTest extends AbstractActionTestCase
 {
     /**
+     * Unit Tests Vokuro\Action\Users\Edit\GetUsersEdit :: a missing user returns to the list
+     */
+    public function testMissingUserRedirects(): void
+    {
+        $response = $this->action(new FakeUserRepository())($this->request(attributes: ['id' => 999]));
+
+        $this->assertSame(302, $response->getStatusCode());
+        $this->assertSame('/users', $response->getHeaders()->get('Location'));
+    }
+
+    /**
      * Unit Tests Vokuro\Action\Users\Edit\GetUsersEdit :: renders the edit form for an existing user
      */
     public function testRendersEditForm(): void
@@ -41,17 +52,6 @@ final class GetUsersEditTest extends AbstractActionTestCase
         $result = $this->renderer->calls[0]['params']['result'];
         $this->assertArrayHasKey('user', $result);
         $this->assertArrayHasKey('logins', $result);
-    }
-
-    /**
-     * Unit Tests Vokuro\Action\Users\Edit\GetUsersEdit :: a missing user returns to the list
-     */
-    public function testMissingUserRedirects(): void
-    {
-        $response = $this->action(new FakeUserRepository())($this->request(attributes: ['id' => 999]));
-
-        $this->assertSame(302, $response->getStatusCode());
-        $this->assertSame('/users', $response->getHeaders()->get('Location'));
     }
 
     private function action(FakeUserRepository $users): GetUsersEdit

@@ -23,20 +23,6 @@ use Vokuro\Tests\Support\Fake\FakeSession;
 final class RequireLoginTest extends AbstractUnitTestCase
 {
     /**
-     * Unit Tests Vokuro\Middleware\RequireLogin :: sends a signed out visitor to the login form
-     */
-    public function testRedirectsWhenSignedOut(): void
-    {
-        $next = new FakeHandler();
-
-        $response = (new RequireLogin(new FakeSession()))(new Request(), $next);
-
-        $this->assertSame(302, $response->getStatusCode());
-        $this->assertSame('/session/login', $response->getHeaders()->get('Location'));
-        $this->assertFalse($next->called);
-    }
-
-    /**
      * Unit Tests Vokuro\Middleware\RequireLogin :: passes a signed in visitor through
      */
     public function testPassesWhenSignedIn(): void
@@ -49,5 +35,19 @@ final class RequireLoginTest extends AbstractUnitTestCase
 
         $this->assertSame($expected, $response);
         $this->assertTrue($next->called);
+    }
+
+    /**
+     * Unit Tests Vokuro\Middleware\RequireLogin :: sends a signed out visitor to the login form
+     */
+    public function testRedirectsWhenSignedOut(): void
+    {
+        $next = new FakeHandler();
+
+        $response = (new RequireLogin(new FakeSession()))(new Request(), $next);
+
+        $this->assertSame(302, $response->getStatusCode());
+        $this->assertSame('/session/login', $response->getHeaders()->get('Location'));
+        $this->assertFalse($next->called);
     }
 }

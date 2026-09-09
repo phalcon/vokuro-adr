@@ -20,21 +20,14 @@ use Vokuro\Contracts\Repository\RememberTokenRepository;
  */
 final class FakeRememberTokenRepository implements RememberTokenRepository
 {
-    /** @var array<string, int> */
-    public array $owners = [];
-
     /** @var array<int, array{userId: int, tokenHash: string, userAgent: string}> */
     public array $added = [];
 
     /** @var array<int, int> */
     public array $deleted = [];
 
-    public function seed(string $tokenHash, int $userId): self
-    {
-        $this->owners[$tokenHash] = $userId;
-
-        return $this;
-    }
+    /** @var array<string, int> */
+    public array $owners = [];
 
     public function add(int $userId, string $tokenHash, string $userAgent): void
     {
@@ -45,11 +38,18 @@ final class FakeRememberTokenRepository implements RememberTokenRepository
     public function deleteForUser(int $userId): void
     {
         $this->deleted[] = $userId;
-        $this->owners    = array_filter($this->owners, fn(int $owner): bool => $owner !== $userId);
+        $this->owners    = array_filter($this->owners, fn (int $owner): bool => $owner !== $userId);
     }
 
     public function findUserByToken(string $tokenHash): ?int
     {
         return $this->owners[$tokenHash] ?? null;
+    }
+
+    public function seed(string $tokenHash, int $userId): self
+    {
+        $this->owners[$tokenHash] = $userId;
+
+        return $this;
     }
 }

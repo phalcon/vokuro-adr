@@ -93,7 +93,7 @@ final class ResetPasswordRepository implements ResetPasswordRepositoryInterface
 
         return new ResetPasswordCollection(
             array_map(
-                fn(array $row): ResetPassword => new ResetPassword(
+                fn (array $row): ResetPassword => new ResetPassword(
                     id: (int) $row['id'],
                     usersId: (int) $row['usersId'],
                     createdAt: (int) $row['createdAt'],

@@ -43,62 +43,6 @@ final class RouteParamsTest extends AbstractUnitTestCase
     }
 
     /**
-     * Unit Tests route params :: a mailed link names both its segments
-     *
-     * @dataProvider mailLinkActionProvider
-     *
-     * @param class-string $class
-     */
-    public function testMailLinkNamesTheCodeAndLowerCasesTheAddress(string $class): void
-    {
-        $this->assertSame(
-            ['code' => 'AbC123', 'email' => 'user@example.dev'],
-            $this->filter->filter($class, ['AbC123', 'User@Example.DEV'])
-        );
-    }
-
-    /**
-     * Unit Tests route params :: an omitted segment leaves the action its default
-     *
-     * @dataProvider idActionProvider
-     *
-     * @param class-string $class
-     */
-    public function testLeavesAnOmittedIdUnset(string $class): void
-    {
-        $this->assertSame([], $this->filter->filter($class, []));
-    }
-
-    /**
-     * Unit Tests route params :: the id segment is named and cast to an int
-     *
-     * @dataProvider idActionProvider
-     *
-     * @param class-string $class
-     */
-    public function testNamesAndCastsTheId(string $class): void
-    {
-        $this->assertSame(['id' => 3], $this->filter->filter($class, ['3']));
-    }
-
-    /**
-     * Unit Tests route params :: a segment that fails its pattern is a 404
-     *
-     * @dataProvider rejectedProvider
-     *
-     * @param class-string $class
-     * @param list<string> $segments
-     */
-    public function testRejectsASegmentThatFailsItsPattern(
-        string $class,
-        array $segments
-    ): void {
-        $this->expectException(RouteNotFound::class);
-
-        $this->filter->filter($class, $segments);
-    }
-
-    /**
      * @return array<string, array{0: class-string}>
      */
     public static function idActionProvider(): array
@@ -137,5 +81,61 @@ final class RouteParamsTest extends AbstractUnitTestCase
             'a mangled reset code'  => [GetResetPassword::class, ['bad+code', 'a@b.dev']],
             'a bad reset recipient' => [GetResetPassword::class, ['AbC123', 'nope']],
         ];
+    }
+
+    /**
+     * Unit Tests route params :: an omitted segment leaves the action its default
+     *
+     * @dataProvider idActionProvider
+     *
+     * @param class-string $class
+     */
+    public function testLeavesAnOmittedIdUnset(string $class): void
+    {
+        $this->assertSame([], $this->filter->filter($class, []));
+    }
+
+    /**
+     * Unit Tests route params :: a mailed link names both its segments
+     *
+     * @dataProvider mailLinkActionProvider
+     *
+     * @param class-string $class
+     */
+    public function testMailLinkNamesTheCodeAndLowerCasesTheAddress(string $class): void
+    {
+        $this->assertSame(
+            ['code' => 'AbC123', 'email' => 'user@example.dev'],
+            $this->filter->filter($class, ['AbC123', 'User@Example.DEV'])
+        );
+    }
+
+    /**
+     * Unit Tests route params :: the id segment is named and cast to an int
+     *
+     * @dataProvider idActionProvider
+     *
+     * @param class-string $class
+     */
+    public function testNamesAndCastsTheId(string $class): void
+    {
+        $this->assertSame(['id' => 3], $this->filter->filter($class, ['3']));
+    }
+
+    /**
+     * Unit Tests route params :: a segment that fails its pattern is a 404
+     *
+     * @dataProvider rejectedProvider
+     *
+     * @param class-string $class
+     * @param list<string> $segments
+     */
+    public function testRejectsASegmentThatFailsItsPattern(
+        string $class,
+        array $segments
+    ): void {
+        $this->expectException(RouteNotFound::class);
+
+        $this->filter->filter($class, $segments);
     }
 }

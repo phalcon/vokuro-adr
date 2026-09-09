@@ -29,6 +29,17 @@ final class FailedLoginRepositoryTest extends AbstractIntegrationTestCase
     }
 
     /**
+     * Integration Tests Vokuro\Infrastructure\Repository\FailedLoginRepository :: add accepts an unknown user
+     */
+    public function testAddAcceptsNullUser(): void
+    {
+        $this->repository->add(null, '1.2.3.4');
+
+        $row = $this->connection->fetchOne('SELECT usersId FROM failed_logins WHERE ipAddress = \'1.2.3.4\'');
+        $this->assertNull($row['usersId']);
+    }
+
+    /**
      * Integration Tests Vokuro\Infrastructure\Repository\FailedLoginRepository :: add stores an attempt
      */
     public function testAddStores(): void
@@ -38,17 +49,6 @@ final class FailedLoginRepositoryTest extends AbstractIntegrationTestCase
         $row = $this->connection->fetchOne('SELECT usersId, ipAddress FROM failed_logins WHERE ipAddress = \'1.2.3.4\'');
         $this->assertSame(7, (int) $row['usersId']);
         $this->assertSame('1.2.3.4', $row['ipAddress']);
-    }
-
-    /**
-     * Integration Tests Vokuro\Infrastructure\Repository\FailedLoginRepository :: add accepts an unknown user
-     */
-    public function testAddAcceptsNullUser(): void
-    {
-        $this->repository->add(null, '1.2.3.4');
-
-        $row = $this->connection->fetchOne('SELECT usersId FROM failed_logins WHERE ipAddress = \'1.2.3.4\'');
-        $this->assertNull($row['usersId']);
     }
 
     /**

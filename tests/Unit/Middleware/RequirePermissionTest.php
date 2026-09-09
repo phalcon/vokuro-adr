@@ -44,20 +44,6 @@ final class RequirePermissionTest extends AbstractUnitTestCase
     }
 
     /**
-     * Unit Tests Vokuro\Middleware\RequirePermission :: sends a denied profile home
-     */
-    public function testDeniesWhenNotGranted(): void
-    {
-        $next = new FakeHandler();
-
-        $response = $this->middleware(new FakeAuthorization())($this->request('/permissions'), $next);
-
-        $this->assertSame(302, $response->getStatusCode());
-        $this->assertSame('/', $response->getHeaders()->get('Location'));
-        $this->assertFalse($next->called);
-    }
-
-    /**
      * Unit Tests Vokuro\Middleware\RequirePermission :: a bare resource is the index action
      */
     public function testBareResourceMapsToIndex(): void
@@ -69,6 +55,20 @@ final class RequirePermissionTest extends AbstractUnitTestCase
 
         $this->assertTrue($next->called);
         $this->assertSame(['profileId' => 2, 'resource' => 'users', 'action' => 'index'], $authorization->asked[0]);
+    }
+
+    /**
+     * Unit Tests Vokuro\Middleware\RequirePermission :: sends a denied profile home
+     */
+    public function testDeniesWhenNotGranted(): void
+    {
+        $next = new FakeHandler();
+
+        $response = $this->middleware(new FakeAuthorization())($this->request('/permissions'), $next);
+
+        $this->assertSame(302, $response->getStatusCode());
+        $this->assertSame('/', $response->getHeaders()->get('Location'));
+        $this->assertFalse($next->called);
     }
 
     private function middleware(FakeAuthorization $authorization): RequirePermission

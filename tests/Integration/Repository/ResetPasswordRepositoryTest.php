@@ -65,16 +65,11 @@ final class ResetPasswordRepositoryTest extends AbstractIntegrationTestCase
     }
 
     /**
-     * Integration Tests Vokuro\Infrastructure\Repository\ResetPasswordRepository :: markReset spends the code
+     * Integration Tests Vokuro\Infrastructure\Repository\ResetPasswordRepository :: forUser is empty for an unknown user
      */
-    public function testMarkResetSpendsTheCode(): void
+    public function testForUserEmpty(): void
     {
-        $id = $this->seedCode(7, 'abc');
-
-        $this->repository->markReset($id);
-
-        $row = $this->connection->fetchOne('SELECT reset FROM reset_passwords WHERE id = ' . $id);
-        $this->assertSame('Y', $row['reset']);
+        $this->assertCount(0, $this->repository->forUser(999));
     }
 
     /**
@@ -90,11 +85,16 @@ final class ResetPasswordRepositoryTest extends AbstractIntegrationTestCase
     }
 
     /**
-     * Integration Tests Vokuro\Infrastructure\Repository\ResetPasswordRepository :: forUser is empty for an unknown user
+     * Integration Tests Vokuro\Infrastructure\Repository\ResetPasswordRepository :: markReset spends the code
      */
-    public function testForUserEmpty(): void
+    public function testMarkResetSpendsTheCode(): void
     {
-        $this->assertCount(0, $this->repository->forUser(999));
+        $id = $this->seedCode(7, 'abc');
+
+        $this->repository->markReset($id);
+
+        $row = $this->connection->fetchOne('SELECT reset FROM reset_passwords WHERE id = ' . $id);
+        $this->assertSame('Y', $row['reset']);
     }
 
     private function seedCode(int $userId, string $code): int

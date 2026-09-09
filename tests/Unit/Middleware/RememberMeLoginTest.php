@@ -27,22 +27,6 @@ use Vokuro\Tests\Support\Fake\FakeUserRepository;
 final class RememberMeLoginTest extends AbstractUnitTestCase
 {
     /**
-     * Unit Tests Vokuro\Middleware\RememberMeLogin :: restores a session from the cookie
-     */
-    public function testRestoresSession(): void
-    {
-        $session    = new FakeSession();
-        $rememberMe = $this->rememberMe(7, 'raw');
-
-        (new RememberMeLogin($session, $rememberMe))(new Request(), new FakeHandler());
-
-        $this->assertSame(
-            ['id' => 7, 'name' => 'Sarah', 'email' => 's@x.dev', 'profilesId' => 2],
-            $session->get('auth')
-        );
-    }
-
-    /**
      * Unit Tests Vokuro\Middleware\RememberMeLogin :: leaves an existing session alone
      */
     public function testLeavesExistingSession(): void
@@ -70,6 +54,22 @@ final class RememberMeLoginTest extends AbstractUnitTestCase
         (new RememberMeLogin($session, $rememberMe))(new Request(), new FakeHandler());
 
         $this->assertFalse($session->has('auth'));
+    }
+
+    /**
+     * Unit Tests Vokuro\Middleware\RememberMeLogin :: restores a session from the cookie
+     */
+    public function testRestoresSession(): void
+    {
+        $session    = new FakeSession();
+        $rememberMe = $this->rememberMe(7, 'raw');
+
+        (new RememberMeLogin($session, $rememberMe))(new Request(), new FakeHandler());
+
+        $this->assertSame(
+            ['id' => 7, 'name' => 'Sarah', 'email' => 's@x.dev', 'profilesId' => 2],
+            $session->get('auth')
+        );
     }
 
     private function rememberMe(int $userId, string $raw): RememberMe

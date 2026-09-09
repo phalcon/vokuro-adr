@@ -41,7 +41,6 @@ use Phalcon\Session\Manager as SessionManager;
 use Phalcon\Session\ManagerInterface;
 use Symfony\Component\Mailer\Transport\Smtp\EsmtpTransport;
 use Vokuro\Application\Authorizer;
-use Vokuro\Application\RememberMe;
 use Vokuro\Contracts\Authorization;
 use Vokuro\Contracts\Cookies as CookiesInterface;
 use Vokuro\Contracts\Csrf as CsrfInterface;
@@ -273,10 +272,6 @@ class AppFront extends AbstractHttpFront
 
     /**
      * Wrapper to getenv() and $_ENV
-     *
-     * @param string $key
-     * @param mixed  $defaultValue
-     * @return mixed
      */
     private function env(string $key, mixed $defaultValue = null): mixed
     {

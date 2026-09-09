@@ -57,18 +57,6 @@ final class AppFrontTest extends AbstractUnitTestCase
     }
 
     /**
-     * Integration Tests Vokuro\AppFront :: wires every provider
-     */
-    public function testWiresEveryProvider(): void
-    {
-        $container = (new TestableAppFront(dirname(__DIR__, 2)))->boot();
-
-        foreach ($this->services() as $id) {
-            $this->assertNotNull($container->get($id));
-        }
-    }
-
-    /**
      * Integration Tests Vokuro\AppFront :: dispatches the home route to a rendered page
      */
     public function testDispatchesTheHomeRoute(): void
@@ -115,6 +103,18 @@ final class AppFrontTest extends AbstractUnitTestCase
         $this->assertNotNull($container->get(UrlInterface::class));
 
         putenv('APP_BASE_URI');
+    }
+
+    /**
+     * Integration Tests Vokuro\AppFront :: wires every provider
+     */
+    public function testWiresEveryProvider(): void
+    {
+        $container = (new TestableAppFront(dirname(__DIR__, 2)))->boot();
+
+        foreach ($this->services() as $id) {
+            $this->assertNotNull($container->get($id));
+        }
     }
 
     /**

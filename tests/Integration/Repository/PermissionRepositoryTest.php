@@ -51,6 +51,18 @@ final class PermissionRepositoryTest extends AbstractIntegrationTestCase
     }
 
     /**
+     * Integration Tests Vokuro\Infrastructure\Repository\PermissionRepository :: replaceForProfile clears with an empty set
+     */
+    public function testReplaceForProfileClears(): void
+    {
+        $this->insert('permissions', ['profilesId' => 2, 'resource' => 'users', 'action' => 'index']);
+
+        $this->repository->replaceForProfile(2, []);
+
+        $this->assertSame([], $this->repository->grantedTo(2));
+    }
+
+    /**
      * Integration Tests Vokuro\Infrastructure\Repository\PermissionRepository :: replaceForProfile swaps the grants
      */
     public function testReplaceForProfileReplaces(): void
@@ -63,18 +75,6 @@ final class PermissionRepositoryTest extends AbstractIntegrationTestCase
             ['users.index' => true, 'users.edit' => true],
             $this->repository->grantedTo(2)
         );
-    }
-
-    /**
-     * Integration Tests Vokuro\Infrastructure\Repository\PermissionRepository :: replaceForProfile clears with an empty set
-     */
-    public function testReplaceForProfileClears(): void
-    {
-        $this->insert('permissions', ['profilesId' => 2, 'resource' => 'users', 'action' => 'index']);
-
-        $this->repository->replaceForProfile(2, []);
-
-        $this->assertSame([], $this->repository->grantedTo(2));
     }
 
     /**

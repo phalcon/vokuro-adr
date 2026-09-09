@@ -23,27 +23,19 @@ use Vokuro\Domain\Page;
  */
 final class FakeProfileRepository implements ProfileRepository
 {
-    /** @var array<int, Profile> */
-    public array $profiles = [];
-
     /** @var array<int, array<string, mixed>> */
     public array $added = [];
-
-    /** @var array<int, array<string, mixed>> */
-    public array $updated = [];
 
     /** @var array<int, int> */
     public array $deleted = [];
 
+    /** @var array<int, Profile> */
+    public array $profiles = [];
+
+    /** @var array<int, array<string, mixed>> */
+    public array $updated = [];
+
     private int $nextId = 1;
-
-    public function seed(Profile $profile): self
-    {
-        $this->profiles[$profile->id] = $profile;
-        $this->nextId = max($this->nextId, $profile->id + 1);
-
-        return $this;
-    }
 
     public function add(array $profile): int
     {
@@ -82,6 +74,14 @@ final class FakeProfileRepository implements ProfileRepository
     public function page(int $page, int $perPage, array $filters = []): Page
     {
         return new Page(new ProfileCollection(array_values($this->profiles)), $page, $page, count($this->profiles));
+    }
+
+    public function seed(Profile $profile): self
+    {
+        $this->profiles[$profile->id] = $profile;
+        $this->nextId                 = max($this->nextId, $profile->id + 1);
+
+        return $this;
     }
 
     public function update(int $id, array $fields): void

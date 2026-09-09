@@ -32,6 +32,7 @@ use Vokuro\Contracts\Repository\UserRepository;
 final class Login
 {
     private const THROTTLE_LIMIT  = 5;
+
     private const THROTTLE_WINDOW = 900;
 
     public function __construct(

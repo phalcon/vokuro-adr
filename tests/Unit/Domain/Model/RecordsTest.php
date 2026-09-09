@@ -22,15 +22,15 @@ use Vokuro\Domain\Model\SuccessLogin;
 final class RecordsTest extends AbstractUnitTestCase
 {
     /**
-     * Unit Tests Vokuro\Domain\Model\SuccessLogin :: holds its fields
+     * Unit Tests Vokuro\Domain\Model\EmailConfirmation :: holds its fields
      */
-    public function testSuccessLogin(): void
+    public function testEmailConfirmation(): void
     {
-        $record = new SuccessLogin(id: 1, ipAddress: '10.0.0.1', userAgent: 'curl');
+        $record = new EmailConfirmation(id: 4, usersId: 9, confirmed: false);
 
-        $this->assertSame(1, $record->id);
-        $this->assertSame('10.0.0.1', $record->ipAddress);
-        $this->assertSame('curl', $record->userAgent);
+        $this->assertSame(4, $record->id);
+        $this->assertSame(9, $record->usersId);
+        $this->assertFalse($record->confirmed);
     }
 
     /**
@@ -60,14 +60,14 @@ final class RecordsTest extends AbstractUnitTestCase
     }
 
     /**
-     * Unit Tests Vokuro\Domain\Model\EmailConfirmation :: holds its fields
+     * Unit Tests Vokuro\Domain\Model\SuccessLogin :: holds its fields
      */
-    public function testEmailConfirmation(): void
+    public function testSuccessLogin(): void
     {
-        $record = new EmailConfirmation(id: 4, usersId: 9, confirmed: false);
+        $record = new SuccessLogin(id: 1, ipAddress: '10.0.0.1', userAgent: 'curl');
 
-        $this->assertSame(4, $record->id);
-        $this->assertSame(9, $record->usersId);
-        $this->assertFalse($record->confirmed);
+        $this->assertSame(1, $record->id);
+        $this->assertSame('10.0.0.1', $record->ipAddress);
+        $this->assertSame('curl', $record->userAgent);
     }
 }

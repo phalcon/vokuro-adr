@@ -27,7 +27,9 @@ use Vokuro\Contracts\Repository\UserRepository;
 final class RememberMe
 {
     private const COOKIE_TOKEN = 'RMT';
+
     private const COOKIE_USER  = 'RMU';
+
     private const LIFETIME     = 2592000;
 
     public function __construct(

@@ -52,14 +52,20 @@ final class PostPermissionsTest extends AbstractActionTestCase
     }
 
     /**
-     * Unit Tests Vokuro\Action\Permissions\PostPermissions :: an unknown profile re-renders the picker
+     * Unit Tests Vokuro\Action\Permissions\PostPermissions :: submitting replaces the grants
      */
-    public function testUnknownProfileRerenders(): void
+    public function testSavesGrants(): void
     {
-        $this->action(new FakeCsrf())($this->request(['profileId' => 999]));
+        $this->profiles->seed(new Profile(2, 'Users', true));
+
+        $this->action(new FakeCsrf())($this->request([
+            'profileId'   => 2,
+            'submit'      => '1',
+            'permissions' => ['users.index'],
+        ]));
 
         $this->assertSame('permissions/index', $this->renderer->calls[0]['path']);
-        $this->assertNull($this->renderer->calls[0]['params']['result']['profile']);
+        $this->assertCount(1, $this->permissions->replaced);
     }
 
     /**
@@ -76,20 +82,14 @@ final class PostPermissionsTest extends AbstractActionTestCase
     }
 
     /**
-     * Unit Tests Vokuro\Action\Permissions\PostPermissions :: submitting replaces the grants
+     * Unit Tests Vokuro\Action\Permissions\PostPermissions :: an unknown profile re-renders the picker
      */
-    public function testSavesGrants(): void
+    public function testUnknownProfileRerenders(): void
     {
-        $this->profiles->seed(new Profile(2, 'Users', true));
-
-        $this->action(new FakeCsrf())($this->request([
-            'profileId'   => 2,
-            'submit'      => '1',
-            'permissions' => ['users.index'],
-        ]));
+        $this->action(new FakeCsrf())($this->request(['profileId' => 999]));
 
         $this->assertSame('permissions/index', $this->renderer->calls[0]['path']);
-        $this->assertCount(1, $this->permissions->replaced);
+        $this->assertNull($this->renderer->calls[0]['params']['result']['profile']);
     }
 
     private function action(Csrf $csrf): PostPermissions

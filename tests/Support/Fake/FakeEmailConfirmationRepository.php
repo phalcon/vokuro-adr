@@ -21,21 +21,14 @@ use Vokuro\Domain\Model\EmailConfirmation;
  */
 final class FakeEmailConfirmationRepository implements EmailConfirmationRepository
 {
-    /** @var array<string, EmailConfirmation> */
-    public array $byCode = [];
-
     /** @var array<int, array{userId: int, code: string}> */
     public array $added = [];
 
+    /** @var array<string, EmailConfirmation> */
+    public array $byCode = [];
+
     /** @var array<int, int> */
     public array $confirmed = [];
-
-    public function seed(string $code, EmailConfirmation $confirmation): self
-    {
-        $this->byCode[$code] = $confirmation;
-
-        return $this;
-    }
 
     public function add(int $userId, string $code): string
     {
@@ -52,5 +45,12 @@ final class FakeEmailConfirmationRepository implements EmailConfirmationReposito
     public function markConfirmed(int $id): void
     {
         $this->confirmed[] = $id;
+    }
+
+    public function seed(string $code, EmailConfirmation $confirmation): self
+    {
+        $this->byCode[$code] = $confirmation;
+
+        return $this;
     }
 }

@@ -34,17 +34,26 @@ final class PostUsersEditTest extends AbstractActionTestCase
     }
 
     /**
-     * Unit Tests Vokuro\Action\Users\Edit\PostUsersEdit :: a valid submission updates and redirects
+     * Unit Tests Vokuro\Action\Users\Edit\PostUsersEdit :: a bad CSRF token for a missing user redirects
      */
-    public function testUpdatesAndRedirects(): void
+    public function testBadCsrfMissingUserRedirects(): void
     {
-        $this->seedUser();
-
-        $response = $this->action(new FakeCsrf())($this->request($this->fields(), [], ['id' => 3]));
+        $response = $this->action(new FakeCsrf(valid: false))($this->request([], [], ['id' => 999]));
 
         $this->assertSame(302, $response->getStatusCode());
         $this->assertSame('/users', $response->getHeaders()->get('Location'));
-        $this->assertArrayHasKey(3, $this->users->updated);
+    }
+
+    /**
+     * Unit Tests Vokuro\Action\Users\Edit\PostUsersEdit :: a bad CSRF token re-renders the form for a known user
+     */
+    public function testBadCsrfRerendersForm(): void
+    {
+        $this->seedUser();
+
+        $this->action(new FakeCsrf(valid: false))($this->request([], [], ['id' => 3]));
+
+        $this->assertSame('users/edit', $this->renderer->calls[0]['path']);
     }
 
     /**
@@ -71,26 +80,17 @@ final class PostUsersEditTest extends AbstractActionTestCase
     }
 
     /**
-     * Unit Tests Vokuro\Action\Users\Edit\PostUsersEdit :: a bad CSRF token re-renders the form for a known user
+     * Unit Tests Vokuro\Action\Users\Edit\PostUsersEdit :: a valid submission updates and redirects
      */
-    public function testBadCsrfRerendersForm(): void
+    public function testUpdatesAndRedirects(): void
     {
         $this->seedUser();
 
-        $this->action(new FakeCsrf(valid: false))($this->request([], [], ['id' => 3]));
-
-        $this->assertSame('users/edit', $this->renderer->calls[0]['path']);
-    }
-
-    /**
-     * Unit Tests Vokuro\Action\Users\Edit\PostUsersEdit :: a bad CSRF token for a missing user redirects
-     */
-    public function testBadCsrfMissingUserRedirects(): void
-    {
-        $response = $this->action(new FakeCsrf(valid: false))($this->request([], [], ['id' => 999]));
+        $response = $this->action(new FakeCsrf())($this->request($this->fields(), [], ['id' => 3]));
 
         $this->assertSame(302, $response->getStatusCode());
         $this->assertSame('/users', $response->getHeaders()->get('Location'));
+        $this->assertArrayHasKey(3, $this->users->updated);
     }
 
     private function action(Csrf $csrf): PostUsersEdit

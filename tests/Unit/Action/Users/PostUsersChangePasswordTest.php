@@ -46,22 +46,6 @@ final class PostUsersChangePasswordTest extends AbstractActionTestCase
     }
 
     /**
-     * Unit Tests Vokuro\Action\Users\ChangePassword\PostUsersChangePassword :: an invalid submission re-renders the form
-     */
-    public function testInvalidRerendersForm(): void
-    {
-        $this->users->seed($this->user());
-
-        $request = $this->request(
-            ['password' => 'short', 'confirmPassword' => 'short'],
-            server: $this->clientServer()
-        );
-        $this->action(new FakeCsrf())($request);
-
-        $this->assertSame('users/changePassword', $this->renderer->calls[0]['path']);
-    }
-
-    /**
      * Unit Tests Vokuro\Action\Users\ChangePassword\PostUsersChangePassword :: a valid change updates and redirects
      */
     public function testChangesAndRedirects(): void
@@ -77,6 +61,22 @@ final class PostUsersChangePasswordTest extends AbstractActionTestCase
         $this->assertSame(302, $response->getStatusCode());
         $this->assertSame('/users', $response->getHeaders()->get('Location'));
         $this->assertArrayHasKey(7, $this->users->updated);
+    }
+
+    /**
+     * Unit Tests Vokuro\Action\Users\ChangePassword\PostUsersChangePassword :: an invalid submission re-renders the form
+     */
+    public function testInvalidRerendersForm(): void
+    {
+        $this->users->seed($this->user());
+
+        $request = $this->request(
+            ['password' => 'short', 'confirmPassword' => 'short'],
+            server: $this->clientServer()
+        );
+        $this->action(new FakeCsrf())($request);
+
+        $this->assertSame('users/changePassword', $this->renderer->calls[0]['path']);
     }
 
     private function action(Csrf $csrf): PostUsersChangePassword

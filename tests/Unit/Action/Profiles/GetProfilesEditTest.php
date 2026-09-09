@@ -22,6 +22,17 @@ use Vokuro\Tests\Unit\Action\AbstractActionTestCase;
 final class GetProfilesEditTest extends AbstractActionTestCase
 {
     /**
+     * Unit Tests Vokuro\Action\Profiles\Edit\GetProfilesEdit :: a missing profile returns to the list
+     */
+    public function testMissingProfileRedirects(): void
+    {
+        $response = $this->action(new FakeProfileRepository())($this->request(attributes: ['id' => 999]));
+
+        $this->assertSame(302, $response->getStatusCode());
+        $this->assertSame('/profiles', $response->getHeaders()->get('Location'));
+    }
+
+    /**
      * Unit Tests Vokuro\Action\Profiles\Edit\GetProfilesEdit :: renders the edit form for an existing profile
      */
     public function testRendersEditForm(): void
@@ -36,17 +47,6 @@ final class GetProfilesEditTest extends AbstractActionTestCase
         $result = $this->renderer->calls[0]['params']['result'];
         $this->assertArrayHasKey('profile', $result);
         $this->assertArrayHasKey('users', $result);
-    }
-
-    /**
-     * Unit Tests Vokuro\Action\Profiles\Edit\GetProfilesEdit :: a missing profile returns to the list
-     */
-    public function testMissingProfileRedirects(): void
-    {
-        $response = $this->action(new FakeProfileRepository())($this->request(attributes: ['id' => 999]));
-
-        $this->assertSame(302, $response->getStatusCode());
-        $this->assertSame('/profiles', $response->getHeaders()->get('Location'));
     }
 
     private function action(FakeProfileRepository $profiles): GetProfilesEdit

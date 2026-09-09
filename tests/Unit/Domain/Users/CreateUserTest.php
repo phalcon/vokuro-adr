@@ -26,6 +26,20 @@ use Vokuro\Tests\Support\Fake\FakeUserRepository;
 final class CreateUserTest extends AbstractUnitTestCase
 {
     /**
+     * @return array<string, array{0: array<string, mixed>, 1: string, 2?: bool}>
+     */
+    public static function invalidProvider(): array
+    {
+        return [
+            'empty name'      => [['name' => ''], 'name'],
+            'empty email'     => [['email' => ''], 'email'],
+            'invalid email'   => [['email' => 'nope'], 'email'],
+            'duplicate email' => [[], 'email', true],
+            'no profile'      => [['profilesId' => 0], 'profilesId'],
+        ];
+    }
+
+    /**
      * Unit Tests Vokuro\Domain\Users\CreateUser :: creates an inactive user, confirmation and mail
      */
     public function testCreatesInactiveUser(): void
@@ -70,19 +84,5 @@ final class CreateUserTest extends AbstractUnitTestCase
         $this->assertSame(Status::NOT_VALID, $payload->getStatus());
         $this->assertArrayHasKey($field, (array) $payload->getMessages());
         $this->assertSame([], $users->added);
-    }
-
-    /**
-     * @return array<string, array{0: array<string, mixed>, 1: string, 2?: bool}>
-     */
-    public static function invalidProvider(): array
-    {
-        return [
-            'empty name'      => [['name' => ''], 'name'],
-            'empty email'     => [['email' => ''], 'email'],
-            'invalid email'   => [['email' => 'nope'], 'email'],
-            'duplicate email' => [[], 'email', true],
-            'no profile'      => [['profilesId' => 0], 'profilesId'],
-        ];
     }
 }

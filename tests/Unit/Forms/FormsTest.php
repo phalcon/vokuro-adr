@@ -27,26 +27,6 @@ use Vokuro\Forms\UserSearchForm;
 final class FormsTest extends AbstractUnitTestCase
 {
     /**
-     * Unit Tests Vokuro\Forms :: each form declares exactly its fields
-     *
-     * @dataProvider formProvider
-     *
-     * @param class-string<Form> $formClass
-     * @param array<int, string>  $expected
-     */
-    public function testFormDeclaresItsFields(string $formClass, array $expected): void
-    {
-        $form = new $formClass();
-
-        $names = array_keys($form->getElements());
-
-        sort($names);
-        sort($expected);
-
-        $this->assertSame($expected, $names);
-    }
-
-    /**
      * @return array<string, array{0: class-string<Form>, 1: array<int, string>}>
      */
     public static function formProvider(): array
@@ -61,5 +41,25 @@ final class FormsTest extends AbstractUnitTestCase
             'user'            => [UserForm::class, ['name', 'email']],
             'user search'     => [UserSearchForm::class, ['id', 'name', 'email']],
         ];
+    }
+
+    /**
+     * Unit Tests Vokuro\Forms :: each form declares exactly its fields
+     *
+     * @dataProvider formProvider
+     *
+     * @param class-string<Form> $formClass
+     * @param array<int, string> $expected
+     */
+    public function testFormDeclaresItsFields(string $formClass, array $expected): void
+    {
+        $form = new $formClass();
+
+        $names = array_keys($form->getElements());
+
+        sort($names);
+        sort($expected);
+
+        $this->assertSame($expected, $names);
     }
 }

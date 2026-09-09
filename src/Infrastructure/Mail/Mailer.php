@@ -38,7 +38,7 @@ final class Mailer implements MailerInterface
     }
 
     /**
-     * @param array<string, string> $to      address => name
+     * @param array<string, string> $to     address => name
      * @param array<string, mixed>  $params
      *
      * @return int the number of addressees

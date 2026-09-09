@@ -47,19 +47,6 @@ final class PostUsersCreateTest extends AbstractActionTestCase
     }
 
     /**
-     * Unit Tests Vokuro\Action\Users\Create\PostUsersCreate :: an invalid submission re-renders the form
-     */
-    public function testInvalidRerendersForm(): void
-    {
-        $request = $this->request(['name' => '', 'email' => 'kate@x.dev', 'profilesId' => 2]);
-
-        $this->action(new FakeCsrf())($request);
-
-        $this->assertSame('users/create', $this->renderer->calls[0]['path']);
-        $this->assertSame([], $this->users->added);
-    }
-
-    /**
      * Unit Tests Vokuro\Action\Users\Create\PostUsersCreate :: a valid submission creates and redirects
      */
     public function testCreatesAndRedirects(): void
@@ -71,6 +58,19 @@ final class PostUsersCreateTest extends AbstractActionTestCase
         $this->assertSame(302, $response->getStatusCode());
         $this->assertSame('/users', $response->getHeaders()->get('Location'));
         $this->assertCount(1, $this->users->added);
+    }
+
+    /**
+     * Unit Tests Vokuro\Action\Users\Create\PostUsersCreate :: an invalid submission re-renders the form
+     */
+    public function testInvalidRerendersForm(): void
+    {
+        $request = $this->request(['name' => '', 'email' => 'kate@x.dev', 'profilesId' => 2]);
+
+        $this->action(new FakeCsrf())($request);
+
+        $this->assertSame('users/create', $this->renderer->calls[0]['path']);
+        $this->assertSame([], $this->users->added);
     }
 
     private function action(Csrf $csrf): PostUsersCreate
