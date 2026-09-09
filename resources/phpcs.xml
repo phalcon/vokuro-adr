@@ -2,11 +2,15 @@
 <ruleset name="Vokuro ADR">
     <description>Vökuró ADR Coding Standards</description>
 
+    <!-- Arguments:
+         p = Show progress
+         s = Show sniff codes in output
+         colors = Force color output (optional, often auto-detected)
+    -->
     <arg name="colors"/>
     <arg value="ps"/>
 
-    <rule ref="PSR12">
-        <exclude name="PSR2.Methods.MethodDeclaration.Underscore"/>
+    <rule ref="Phalcon">
         <exclude name="PSR1.Files.SideEffects.FoundWithSymbols"/>
     </rule>
 
