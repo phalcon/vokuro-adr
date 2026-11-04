@@ -29,6 +29,9 @@ use Phalcon\Contracts\Http\AttributeRequest;
 use Phalcon\Contracts\Logger\Logger as LoggerInterface;
 use Phalcon\Contracts\View\Renderer;
 use Phalcon\DataMapper\Pdo\Connection;
+use Phalcon\DebugBar\ADR\Provider as DebugBarProvider;
+use Phalcon\DebugBar\Debug;
+use Phalcon\DebugBar\Logger\ExceptionAdapter;
 use Phalcon\Encryption\Security;
 use Phalcon\Html\TagFactory;
 use Phalcon\Logger\Adapter\Stream as LogStream;
@@ -156,7 +159,9 @@ class AppFront extends AbstractHttpFront
 
         /**
          * The ADR provider leaves a null logger in place. Anything the error
-         * responder catches goes here instead of nowhere.
+         * responder catches goes here instead of nowhere. The debug bar reads
+         * the exceptions from the logger. Its adapter does nothing when the bar
+         * did not boot.
          */
         $container->set(
             LoggerInterface::class,
@@ -166,7 +171,8 @@ class AppFront extends AbstractHttpFront
                     [
                         'main' => new LogStream(
                             $this->projectRoot . '/var/logs/application.log'
-                        )
+                        ),
+                        'debugbar' => new ExceptionAdapter(Debug::getBar()),
                     ]
                 );
             }
@@ -175,12 +181,13 @@ class AppFront extends AbstractHttpFront
         /**
          * The data mapper, not `Mvc\Model`: the ORM resolves its services
          * through a `Phalcon\Di\DiInterface` that an ADR application does not
-         * have, while the data mapper needs no container at all.
+         * have, while the data mapper needs no container at all. The debug bar
+         * reads the queries from the events of the connection.
          */
         $container->set(
             Connection::class,
-            function () {
-                return new Connection(
+            function ($container) {
+                $connection = new Connection(
                     sprintf(
                         'mysql:host=%s;port=%d;dbname=%s;charset=utf8mb4',
                         $this->env('DB_HOST', 'mysql'),
@@ -190,6 +197,9 @@ class AppFront extends AbstractHttpFront
                     $this->env('DB_USERNAME', 'root'),
                     $this->env('DB_PASSWORD', '')
                 );
+                $connection->setEventsManager($container->get(EventsManagerContract::class));
+
+                return $connection;
             }
         );
         $container->setAlias(Connection::class, 'db');
@@ -268,6 +278,15 @@ class AppFront extends AbstractHttpFront
                 );
             }
         );
+
+        /**
+         * The debug bar resolves the events manager and the request, and the
+         * container cannot change a service after that. It must be the last
+         * provider.
+         */
+        if ('development' === $this->env('APP_ENV', 'production')) {
+            (new DebugBarProvider())->provide($container);
+        }
     }
 
     /**
@@ -291,6 +310,7 @@ class AppFront extends AbstractHttpFront
     {
         $view = new Simple();
         $view->setViewsDir($this->projectRoot . '/resources/views/');
+        $view->setEventsManager($container->get(EventsManagerContract::class));
         $view->setVar('tag', $container->get(TagFactory::class));
         $view->setVar('url', $container->get(UrlInterface::class));
         $view->setVar('csrf', $container->get(CsrfInterface::class));
