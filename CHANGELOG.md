@@ -6,6 +6,8 @@ All notable changes are documented here. The format is based on [Keep a Changelo
 
 ### Added
 
+- The debug bar, in the development environment. [#4](https://github.com/phalcon/vokuro-adr/issues/4)
+
 ### Changed
 
 ### Removed
