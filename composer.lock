@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1a3cdca8f8642965a551baad78f49279",
+    "content-hash": "8ebeb777d34301789a951b484f4b0821",
     "packages": [
         {
             "name": "cakephp/chronos",
@@ -752,16 +752,16 @@
         },
         {
             "name": "phalcon/debugbar",
-            "version": "v0.4.0",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phalcon/debugbar.git",
-                "reference": "ec62a7fe4d83234cdb74edf1ef7fcc08d3565a7d"
+                "reference": "659fc14fac4ff8db82e5a2a6b34f379c8785db95"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phalcon/debugbar/zipball/ec62a7fe4d83234cdb74edf1ef7fcc08d3565a7d",
-                "reference": "ec62a7fe4d83234cdb74edf1ef7fcc08d3565a7d",
+                "url": "https://api.github.com/repos/phalcon/debugbar/zipball/659fc14fac4ff8db82e5a2a6b34f379c8785db95",
+                "reference": "659fc14fac4ff8db82e5a2a6b34f379c8785db95",
                 "shasum": ""
             },
             "require": {
@@ -772,17 +772,19 @@
                 "friendsofphp/php-cs-fixer": "^3",
                 "pds/composer-script-names": "^1",
                 "pds/skeleton": "^1",
-                "phalcon/phalcon": "6.0.x-dev",
-                "phalcon/talon": "^0.6 || ^0.7",
+                "phalcon/code-quality": "^1.0",
+                "phalcon/phalcon": "^6.0@beta",
+                "phalcon/talon": "^1.0.0",
                 "phalcon/traits": "^4.0",
                 "phpstan/phpstan": "^2",
                 "phpunit/phpunit": "^10.5",
                 "squizlabs/php_codesniffer": "^4.0"
             },
             "suggest": {
-                "ext-phalcon": "Phalcon C extension (^5) - run the debug bar on Phalcon v5",
+                "ext-phalcon": "Phalcon C extension (^5) - run the debug bar on Phalcon v5. ADR support needs v5.18.0 or later",
                 "phalcon/phalcon": "Phalcon PHP implementation (^6) - run the debug bar on Phalcon v6"
             },
+            "default-branch": true,
             "type": "library",
             "autoload": {
                 "psr-4": {
@@ -815,7 +817,7 @@
             ],
             "support": {
                 "issues": "https://github.com/phalcon/debugbar/issues",
-                "source": "https://github.com/phalcon/debugbar/tree/v0.4.0"
+                "source": "https://github.com/phalcon/debugbar/tree/master"
             },
             "funding": [
                 {
@@ -827,8 +829,8 @@
                     "type": "open_collective"
                 }
             ],
-            "time": "2026-07-15T00:52:18+00:00",
-            "published-time": "2026-07-15T00:53:43+00:00"
+            "time": "2026-11-04T19:01:39+00:00",
+            "published-time": "2026-11-04T19:01:44+00:00"
         },
         {
             "name": "phpoption/phpoption",
@@ -7320,6 +7322,7 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
+        "phalcon/debugbar": 20,
         "phalcon/phalcon": 10,
         "phalcon/phql": 20,
         "phalcon/volt": 20
