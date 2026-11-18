@@ -30,7 +30,6 @@ use Phalcon\Contracts\Logger\Logger as LoggerInterface;
 use Phalcon\Contracts\View\Renderer;
 use Phalcon\DataMapper\Pdo\Connection;
 use Phalcon\DebugBar\ADR\Provider as DebugBarProvider;
-use Phalcon\DebugBar\Debug;
 use Phalcon\DebugBar\Logger\ExceptionAdapter;
 use Phalcon\Encryption\Security;
 use Phalcon\Html\TagFactory;
@@ -172,7 +171,7 @@ class AppFront extends AbstractHttpFront
                         'main' => new LogStream(
                             $this->projectRoot . '/var/logs/application.log'
                         ),
-                        'debugbar' => new ExceptionAdapter(Debug::getBar()),
+                        'debugbar' => new ExceptionAdapter(),
                     ]
                 );
             }
